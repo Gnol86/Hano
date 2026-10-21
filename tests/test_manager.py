@@ -127,6 +127,60 @@ async def test_update_replaces_mobile_and_waiting_content_without_new_voice(hass
     assert voice.call_count == 2
 
 
+async def test_ios_tag_update_restore_clear_and_stale_cycle(hass, home):
+    """Exercise actual adapter payloads with a persisted pre-fix-length tag."""
+    manager, calls = home
+    config = deepcopy(manager.config)
+    config["persons"][0]["devices"][0]["platform"] = "ios"
+    await manager.save(config, manager.revision)
+    payload = laundry(person_entity_ids=["person.alice"], recipient_mode="selected")
+    await manager.send(payload)
+    old_internal_tag = manager.notifications["laundry"]["_tag"]
+    tag = calls[-1][1]["data"]["tag"]
+    assert len(old_internal_tag.encode()) > 64
+    assert len(tag.encode()) <= 64
+    await manager.stop()
+    restored = HanoManager(hass, manager.entry)
+    await restored.load()
+    try:
+        assert len(calls) == 1  # No replay on restart.
+        assert restored.notifications["laundry"]["_tag"] == old_internal_tag
+        await restored.send(payload | {"message": "Updated"})
+        assert calls[-1][1]["data"]["tag"] == tag
+        await restored.resolve("laundry")
+        assert calls[-1][1] == {"message": "clear_notification", "data": {"tag": tag}}
+        await restored._handle_mobile_status(
+            Event(
+                "mobile_app_notification_cleared", {"tag": tag, "device_id": "alice"}
+            ),
+            "cleared",
+        )
+        assert (
+            restored.snapshot()["notifications"][0]["deliveries"][0]["status"]
+            == "cleared"
+        )
+        await restored.send(payload | {"resolve_on_clear": True})
+        new_tag = calls[-1][1]["data"]["tag"]
+        assert new_tag != tag and len(new_tag.encode()) <= 64
+        await restored._handle_mobile_status(
+            Event(
+                "mobile_app_notification_cleared", {"tag": tag, "device_id": "alice"}
+            ),
+            "cleared",
+        )
+        assert restored.notifications["laundry"]["status"] == "active"
+        await restored._handle_mobile_status(
+            Event(
+                "mobile_app_notification_cleared",
+                {"tag": new_tag, "device_id": "alice"},
+            ),
+            "cleared",
+        )
+        assert restored.notifications["laundry"]["status"] == "resolved"
+    finally:
+        await restored.stop()
+
+
 async def test_storage_reload_preserves_waiting_without_resending(hass, home):
     manager, calls = home
     await manager.send(laundry())
@@ -139,6 +193,32 @@ async def test_storage_reload_preserves_waiting_without_resending(hass, home):
     await hass.async_block_till_done()
     assert [c[0] for c in calls] == ["mobile_app_alice", "mobile_app_bob"]
     await restored.stop()
+
+
+@pytest.mark.parametrize("name,other", [("alice", "bob"), ("bob", "alice")])
+async def test_mixed_platform_mobile_events_match_tag_and_device(home, name, other):
+    manager, calls = home
+    config = deepcopy(manager.config)
+    config["persons"][1]["devices"][0]["platform"] = "ios"
+    await manager.save(config, manager.revision)
+    await manager.send(laundry(respect_sleep=False))
+    tags = {service: data["data"]["tag"] for service, data in calls}
+    assert tags["mobile_app_alice"] != tags["mobile_app_bob"]
+    tag = tags[f"mobile_app_{name}"]
+    await manager._handle_mobile_status(
+        Event("mobile_app_notification_received", {"tag": tag, "device_id": other}),
+        "received",
+    )
+    record = manager.notifications["laundry"]
+    assert all(d["status"] == "accepted" for d in record["deliveries"].values())
+    await manager._handle_mobile_status(
+        Event("mobile_app_notification_received", {"tag": tag, "device_id": name}),
+        "received",
+    )
+    for delivery in record["deliveries"].values():
+        assert delivery["status"] == (
+            "received" if delivery["person_id"] == f"person.{name}" else "accepted"
+        )
 
 
 async def test_removing_ha_persistent_notification_resolves_only_hano(hass, home):

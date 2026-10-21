@@ -93,7 +93,7 @@ const request = {
 const makeSnapshot = () => {
   const time = "2026-10-21T14:32:00Z";
   return {
-    version: "0.1.0b1",
+    version: "0.1.0b2",
     revision: 1,
     config: {
       persons: [

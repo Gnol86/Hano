@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from hashlib import sha256
 from typing import Any
 
 from homeassistant.components import persistent_notification
@@ -148,11 +149,22 @@ def validate_endpoint(hass: HomeAssistant, endpoint: dict, request: dict) -> Non
         )
 
 
+def mobile_tag(tag: str, platform: str) -> str:
+    """Keep iOS collapse IDs within APNs' 64-byte limit, including stored cycles.
+
+    Hash the complete identity so updates and clears share a tag without merging
+    distinct cycles. Android and HA persistent notification identities stay intact.
+    """
+    if platform == "ios" and len(tag.encode("utf-8")) > 64:
+        return sha256(tag.encode("utf-8")).hexdigest()
+    return tag
+
+
 def mobile_payload(
     request: dict, tag: str, tokens: dict[str, str], platform: str
 ) -> dict:
     """Translate common options explicitly, preserving platform differences."""
-    data: dict[str, Any] = {"tag": tag}
+    data: dict[str, Any] = {"tag": mobile_tag(tag, platform)}
     priority = request["priority"]
     if platform == "ios":
         levels = {
@@ -250,7 +262,10 @@ class Adapters:
             return False
         await self.hass.services.async_call(
             *endpoint["target"].split(".", 1),
-            {"message": "clear_notification", "data": {"tag": tag}},
+            {
+                "message": "clear_notification",
+                "data": {"tag": mobile_tag(tag, endpoint["platform"])},
+            },
             blocking=True,
             context=context,
         )

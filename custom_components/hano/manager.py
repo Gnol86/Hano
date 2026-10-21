@@ -25,6 +25,7 @@ from .adapters import (
     Adapters,
     mobile_catalog,
     mobile_endpoint,
+    mobile_tag,
     resolve_endpoint,
     validate_endpoint,
 )
@@ -1071,7 +1072,7 @@ class HanoManager:
         if not tag:
             return
         for record in list(self.notifications.values()):
-            if record["_tag"] != tag:
+            if tag not in {record["_tag"], mobile_tag(record["_tag"], "ios")}:
                 continue
             if status == "received" and record["status"] != "active":
                 return
@@ -1088,6 +1089,13 @@ class HanoManager:
             if not matched:
                 return
             if not event.data.get("device_id") and len(matched) != 1:
+                return
+            matched = [
+                d
+                for d in matched
+                if mobile_tag(record["_tag"], d["_endpoint"].get("platform", "")) == tag
+            ]
+            if not matched:
                 return
             async with self._mutation():
                 for delivery in matched:

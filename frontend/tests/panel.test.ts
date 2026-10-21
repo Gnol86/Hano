@@ -27,7 +27,7 @@ const { HanoPanel } = await import("../src/hano-panel");
 type Panel = InstanceType<typeof HanoPanel>;
 function fixture(): Snapshot {
   return {
-    version: "0.1.0b1",
+    version: "0.1.0b2",
     revision: 1,
     config: {
       ...emptyConfig(),
@@ -657,4 +657,68 @@ test("button IDs can be edited without replacing their focused input", async () 
     element,
   );
   assert.equal(element.value, "acknowledge");
+});
+
+test("rooms can be added and saved on HTTP without crypto.randomUUID", async (t) => {
+  const original = Object.getOwnPropertyDescriptor(globalThis, "crypto")!;
+  const getRandomValues = globalThis.crypto.getRandomValues.bind(globalThis.crypto);
+  Object.defineProperty(globalThis, "crypto", {
+    configurable: true,
+    value: { getRandomValues },
+  });
+  t.after(() => Object.defineProperty(globalThis, "crypto", original));
+
+  const { panel, calls } = await mount();
+  click(panel, "Pièces et voix");
+  await settle(panel);
+  click(panel, "Ajouter une pièce");
+  await settle(panel);
+  click(panel, "Ajouter une pièce");
+  await settle(panel);
+  const names = panel.shadowRoot!.querySelectorAll<HTMLInputElement>(
+    '[data-field="roomName"]',
+  );
+  names.forEach((element, index) => {
+    element.value = `Room ${index + 1}`;
+    element.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  await settle(panel);
+  click(panel, "Enregistrer");
+  await settle(panel);
+
+  const config = calls[0].config as Snapshot["config"];
+  assert.equal(config.rooms.length, 2);
+  const ids = config.rooms.map((room) => room.id);
+  assert.equal(new Set(ids).size, 2);
+  for (const id of ids)
+    assert.match(
+      id,
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+    );
+});
+
+test("buttons can be added and previewed on HTTP without crypto.randomUUID", async (t) => {
+  const original = Object.getOwnPropertyDescriptor(globalThis, "crypto")!;
+  const getRandomValues = globalThis.crypto.getRandomValues.bind(globalThis.crypto);
+  Object.defineProperty(globalThis, "crypto", {
+    configurable: true,
+    value: { getRandomValues },
+  });
+  t.after(() => Object.defineProperty(globalThis, "crypto", original));
+
+  const { panel, calls } = await mount();
+  click(panel, "Tests et réglages");
+  await settle(panel);
+  input(panel, "message", "HTTP notification test");
+  click(panel, "Ajouter un bouton");
+  await settle(panel);
+  input(panel, "buttonLabel", "Finished");
+  click(panel, "Simuler sans envoyer");
+  await settle(panel);
+
+  assert.equal(calls[0].type, "hano/preview");
+  const buttons = (calls[0].request as Request).buttons;
+  assert.equal(buttons.length, 1);
+  assert.match(buttons[0].id, /^button_[0-9a-f]{8}$/);
+  assert.equal(buttons[0].label, "Finished");
 });

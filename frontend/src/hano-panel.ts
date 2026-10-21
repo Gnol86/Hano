@@ -7,6 +7,7 @@ import {
 } from "lit";
 import { repeat } from "lit/directives/repeat.js";
 import { Draft, copy, emptyRequest, errorCode, toggle } from "./model";
+import { createId } from "./id";
 import {
   translate,
   translateKnown,
@@ -700,7 +701,7 @@ export class HanoPanel extends LitElement {
           <button
             @click=${() => {
               this.config.rooms.push({
-                id: crypto.randomUUID(),
+                id: createId(),
                 name: "",
                 presence_entity_id: "",
                 sleep_entity_id: "",
@@ -958,7 +959,7 @@ export class HanoPanel extends LitElement {
           (_button, index) => index,
           (button, index) => this.buttonEditor(button, index),
         )}<button
-          @click=${() => this.editRequest("buttons", [...request.buttons, { id: `button_${crypto.randomUUID().slice(0, 8)}`, label: "", uri: "", actions: [], resolve: false }])}
+          @click=${() => this.editRequest("buttons", [...request.buttons, { id: `button_${createId().slice(0, 8)}`, label: "", uri: "", actions: [], resolve: false }])}
         >
           ${this.t("addButton")}
         </button>

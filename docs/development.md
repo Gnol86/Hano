@@ -97,8 +97,8 @@ manifest, Python project and lockfile, and release notes before publication.
 
 For a release, align the Python-format version in `manifest.json`, `pyproject.toml`,
 and `uv.lock`, add `releases/<version>.md`, rebuild the panel, run all checks, and tag
-`v<version>`. `0.1.0b1` is the Python/Home Assistant version; the private npm project
-uses its SemVer equivalent `0.1.0-beta.1`. Beta tags are published as prereleases.
+`v<version>`. `0.1.0b2` is the Python/Home Assistant version; the private npm project
+uses its SemVer equivalent `0.1.0-beta.2`. Beta tags are published as prereleases.
 
 Publication, HACS download, Home Assistant restart, and verified device behavior
 are separate steps. This project does not submit itself to the default HACS

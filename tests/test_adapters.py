@@ -12,6 +12,7 @@ from custom_components.hano.adapters import (
     Adapters,
     mobile_catalog,
     mobile_payload,
+    mobile_tag,
     resolve_endpoint,
     validate_endpoint,
 )
@@ -36,6 +37,23 @@ def test_ios_priorities(priority, level):
     data = mobile_payload(request(priority=priority), "tag", {}, "ios")["data"]
     assert data["push"]["interruption-level"] == level
     assert ("sound" in data["push"]) is (priority == "critical")
+
+
+@pytest.mark.parametrize("tag", ["x" * 65, "é" * 33, "hano_entry_" + "a" * 80])
+def test_ios_tag_meets_apns_byte_limit_and_preserves_cycle_identity(tag):
+    value = mobile_payload(request(), tag, {}, "ios")["data"]["tag"]
+    assert len(value.encode("utf-8")) <= 64
+    assert (
+        value
+        == mobile_payload(request(message="Updated"), tag, {}, "ios")["data"]["tag"]
+    )
+    assert value != mobile_tag(tag + "new-cycle", "ios")
+    assert mobile_tag(tag, "android") == tag
+
+
+@pytest.mark.parametrize("tag", ["short", "x" * 64, "é" * 32])
+def test_valid_ios_tags_keep_their_existing_identity(tag):
+    assert mobile_tag(tag, "ios") == tag
 
 
 def test_android_critical_and_button_tokens():
