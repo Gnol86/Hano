@@ -284,6 +284,28 @@ async def test_shared_destination_sent_once_when_any_owner_is_eligible(home):
     assert len(result["deliveries"]) == len(calls) == 1
 
 
+async def test_active_update_keeps_original_mapping_after_config_edit(home):
+    manager, calls = home
+    await manager.send(laundry())
+    config = deepcopy(manager.config)
+    config["persons"][0]["devices"][0]["target"] = "notify.mobile_app_shared"
+    config["persons"][0]["devices"][0]["device_id"] = "shared"
+    await manager.save(config, 1)
+    await manager.send(laundry(message="Updated"))
+    assert calls[-1][0] == "mobile_app_alice"
+    await manager.send(laundry(cycle_mode="new"))
+    assert calls[-1][0] == "mobile_app_shared"
+
+
+async def test_buttons_without_mobile_fail_before_persistent_side_effect(home):
+    manager, calls = home
+    with pytest.raises(HanoError, match="mobile channel"):
+        await manager.send(
+            laundry(channels=["persistent"], buttons=[{"id": "done", "label": "Done"}])
+        )
+    assert not manager.notifications and not calls
+
+
 async def test_button_failure_keeps_notification_active_and_cleans_script(hass, home):
     manager, _ = home
 

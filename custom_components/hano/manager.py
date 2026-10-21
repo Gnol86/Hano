@@ -304,6 +304,8 @@ class HanoManager:
     ) -> tuple[dict, dict, list[dict]]:
         request = normalize_request(request)
         self._expiry(request)
+        if request["buttons"] and "mobile" not in request["channels"]:
+            raise HanoError("unsupported_options", "Buttons require a mobile channel")
         if (
             request["camera_entity_id"]
             and self.hass.states.get(request["camera_entity_id"]) is None
@@ -389,7 +391,10 @@ class HanoManager:
 
     async def preview(self, request: dict, context: Context | None = None) -> dict:
         await self._authorize(context)
-        request, decisions, endpoints = await self._prepare(request, self.config)
+        request = normalize_request(request)
+        existing = self.notifications.get(request["notification_id"])
+        config = self._request_config(request, existing)
+        request, decisions, endpoints = await self._prepare(request, config)
         return {
             "preview": True,
             "request": request,
@@ -399,6 +404,15 @@ class HanoManager:
                 for p in endpoints
             ],
         }
+
+    def _request_config(self, request: dict, existing: dict | None) -> dict:
+        return deepcopy(
+            existing["_config"]
+            if existing
+            and existing["status"] == "active"
+            and request["cycle_mode"] == "update"
+            else self.config
+        )
 
     def _history(self, record: dict, event: str, target: str = "", detail: str = ""):
         record["updated_at"] = now()
@@ -423,7 +437,12 @@ class HanoManager:
         }
 
     def _build(
-        self, request: dict, decisions: dict, endpoints: list, context: Context
+        self,
+        request: dict,
+        decisions: dict,
+        endpoints: list,
+        context: Context,
+        config: dict | None = None,
     ) -> dict:
         notification_id = request["notification_id"] or uuid4().hex
         request = request | {"notification_id": notification_id}
@@ -441,7 +460,7 @@ class HanoManager:
             "expires_at": self._expiry(request),
             "deliveries": {},
             "history": [],
-            "_config": deepcopy(self.config),
+            "_config": deepcopy(self.config if config is None else config),
             "_creator_user_id": context.user_id,
             "_button_runs": {},
             "_tag": (
@@ -486,12 +505,14 @@ class HanoManager:
         async with self._commands:
             if self._stopped or self.hass.is_stopping:
                 raise HanoError("unavailable", "Hano is unloading")
-            request, decisions, endpoints = await self._prepare(request, self.config)
+            request = normalize_request(request)
             identifier = request["notification_id"] or uuid4().hex
             request["notification_id"] = identifier
             transition = self._transition_locks.setdefault(identifier, asyncio.Lock())
             async with transition:
                 previous = self.notifications.get(identifier)
+                config = self._request_config(request, previous)
+                request, decisions, endpoints = await self._prepare(request, config)
                 update = bool(
                     previous
                     and previous["status"] == "active"
@@ -524,7 +545,9 @@ class HanoManager:
                                     delivery["_tokens"] = {}
                             self._history(record, "updated")
                     else:
-                        record = self._build(request, decisions, endpoints, context)
+                        record = self._build(
+                            request, decisions, endpoints, context, config
+                        )
                         async with self._mutation():
                             if previous:
                                 self._archive.append(

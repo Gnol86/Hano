@@ -286,6 +286,10 @@ for a given side effect to avoid deliberately executing it twice.
 
 ## Capability limits
 
+Buttons require the mobile channel. Persistent HA cards and voice announcements
+cannot display the configured mobile buttons; requests containing buttons without
+the mobile channel are rejected before any send.
+
 | Capability | iOS Companion | Android Companion | Generic `notify` entity |
 | --- | --- | --- | --- |
 | Message | Yes | Yes | Yes |
