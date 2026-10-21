@@ -2,7 +2,7 @@
 
 This guide was prepared from the actual `Notifier.py` application, its AppDaemon
 configuration, and seven automation callers inspected before Hano was created.
-It is a migration plan, not an automatic converter. The first beta does not edit
+It is a migration plan, not an automatic converter. Installing Hano does not edit
 Home Assistant configuration, disable AppDaemon or alter existing automations.
 Examples below use fictional entity names; the private installation inventory is
 kept out of the public repository.
@@ -72,7 +72,7 @@ alarm automations individually when they are intentionally migrated later.
 
 ## Graphical setup and preview
 
-1. Install Hano as a HACS custom repository, choosing the beta explicitly. Keep
+1. Install Hano as a HACS custom repository, choosing the stable release. Keep
    existing Notifier callers in service during setup.
 2. In **Hano → People**, map each `person` to its Companion device(s). Add the
    actual sleep sensor if needed. Any suitable HA entity is allowed; no Hapo

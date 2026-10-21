@@ -27,7 +27,7 @@ const { HanoPanel } = await import("../src/hano-panel");
 type Panel = InstanceType<typeof HanoPanel>;
 function fixture(): Snapshot {
   return {
-    version: "0.1.0b2",
+    version: "0.1.0",
     revision: 1,
     config: {
       ...emptyConfig(),

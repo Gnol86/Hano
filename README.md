@@ -7,7 +7,7 @@
 
 [![Validation](https://github.com/Gnol86/Hano/actions/workflows/validate.yml/badge.svg)](https://github.com/Gnol86/Hano/actions/workflows/validate.yml)
 [![HACS validation](https://github.com/Gnol86/Hano/actions/workflows/hacs.yml/badge.svg)](https://github.com/Gnol86/Hano/actions/workflows/hacs.yml)
-[![Release](https://img.shields.io/github/v/release/Gnol86/Hano?include_prereleases)](https://github.com/Gnol86/Hano/releases)
+[![Release](https://img.shields.io/github/v/release/Gnol86/Hano)](https://github.com/Gnol86/Hano/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 Hano is a native Home Assistant integration for mobile notifications, immediate
@@ -16,7 +16,7 @@ choose the trigger, message, recipients, and options. Hano tracks each destinati
 waits when requested, and closes the notification across its supported channels.
 There are no notification profiles to maintain.
 
-**Current beta: `0.1.0b2`. Requires Home Assistant 2026.10 or newer.**
+**Current stable release: `0.1.0`. Requires Home Assistant 2026.10 or newer.**
 Hano can be installed through a HACS custom repository; it is not listed in the
 HACS default catalogue. This release does not install itself, migrate existing
 automations, or stop an AppDaemon application.
@@ -60,8 +60,7 @@ another push service.
 
 1. In HACS, open **Custom repositories** and add
    `https://github.com/Gnol86/Hano` with the **Integration** category.
-2. Open Hano's download dialog and enable visibility of prerelease/beta versions.
-   Select **`0.1.0b2`** and download it.
+2. Open Hano's download dialog, select **`0.1.0`**, and download it.
 3. Restart Home Assistant to load the integration files.
 4. Go to **Settings → Devices & services → Add integration**, search for **Hano**,
    and confirm setup.
@@ -172,7 +171,7 @@ Treat Home Assistant's local storage and backups accordingly. Hano makes no dire
 cloud calls; the privacy characteristics of your selected notification and TTS
 providers still apply.
 
-The beta is intended for deliberate testing before replacing existing workflows.
+Test your selected devices and routing before replacing existing workflows.
 The repository contains automated tests, a standalone simulated panel, and local
 Home Assistant validation tools. Passing software checks or publishing a release
 does not establish reliability on your own phones or speakers.
@@ -181,7 +180,7 @@ does not establish reliability on your own phones or speakers.
 - [Architecture](docs/architecture.md)
 - [Migration guide](docs/migration.md)
 - [Development and validation](docs/development.md)
-- [Release notes](releases/0.1.0b2.md)
+- [Release notes](releases/0.1.0.md)
 - [Contributing](CONTRIBUTING.md)
 
 Hano follows the interface conventions of [Halo](https://github.com/Gnol86/Halo),
