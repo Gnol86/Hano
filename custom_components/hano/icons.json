@@ -1,0 +1,7 @@
+{
+  "services": {
+    "send": {"service": "mdi:bell-ring-outline"},
+    "resolve": {"service": "mdi:bell-check-outline"},
+    "preview": {"service": "mdi:bell-cog-outline"}
+  }
+}

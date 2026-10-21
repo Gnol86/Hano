@@ -1,0 +1,354 @@
+{
+  "title": "Hano",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Hano",
+        "description": "Set up people, devices and rooms in the Hano sidebar panel. Hano does not send any notification until an action is called."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Only one Hano installation is needed.",
+      "already_configured": "Only one Hano installation is needed.",
+      "already_in_progress": "Setup is already in progress."
+    }
+  },
+  "exceptions": {
+    "operation_failed": {
+      "message": "Operation failed ({code}): {detail}"
+    }
+  },
+  "services": {
+    "send": {
+      "name": "Send a notification",
+      "description": "Send, update or start a notification cycle. An accepted call does not prove human reception.",
+      "fields": {
+        "message": {
+          "name": "Message",
+          "description": "Text to notify. Templates are supported by Home Assistant."
+        },
+        "title": {
+          "name": "Title",
+          "description": "Optional notification title."
+        },
+        "notification_id": {
+          "name": "Notification identifier",
+          "description": "Reuse to update an active notification or resolve it later. Empty generates an identifier."
+        },
+        "image_url": {
+          "name": "Image URL",
+          "description": "Image URL supported by the destination."
+        },
+        "camera_entity_id": {
+          "name": "Camera",
+          "description": "Attach an image from this camera when supported."
+        },
+        "click_url": {
+          "name": "Open link",
+          "description": "Link opened when the notification is tapped."
+        },
+        "recipient_mode": {
+          "name": "Recipients",
+          "description": "Select configured people, all residents, current presence, or the nearest known position. No proximity entities are needed."
+        },
+        "person_entity_ids": {
+          "name": "People",
+          "description": "Configured people to include when using selected recipients."
+        },
+        "mobile_device_ids": {
+          "name": "Companion devices",
+          "description": "Send directly to these Companion devices; their owner’s sleep state is not applied."
+        },
+        "notify_entity_ids": {
+          "name": "Notify entities",
+          "description": "Send directly through these notify entities. Only supported options are accepted."
+        },
+        "channels": {
+          "name": "Channels",
+          "description": "Mobile, immediate voice, and persistent Home Assistant notifications can be combined."
+        },
+        "respect_sleep": {
+          "name": "Respect sleep",
+          "description": "Only send when configured sleep sensors confirm the person is awake. Independent of mobile priority."
+        },
+        "delivery": {
+          "name": "Delivery",
+          "description": "Send to eligible people now, or retain a pending delivery for each person until eligible."
+        },
+        "priority": {
+          "name": "Priority",
+          "description": "Requested mobile interruption level. Device and operating system settings still apply."
+        },
+        "cycle_mode": {
+          "name": "Cycle",
+          "description": "Update preserves delivery tracking and does not repeat voice. New starts a new cycle."
+        },
+        "expires_in": {
+          "name": "Expires after",
+          "description": "Seconds until global resolution. Zero means no expiration."
+        },
+        "resolve_on_clear": {
+          "name": "Resolve when cleared",
+          "description": "Resolve everywhere when Companion reports a mobile dismissal. Not all devices report this event."
+        },
+        "voice_mode": {
+          "name": "Voice destinations",
+          "description": "Use selected speakers, or speakers in configured occupied rooms."
+        },
+        "media_player_entity_ids": {
+          "name": "Media players",
+          "description": "Speakers for explicit voice destinations. Voice is immediate and is never replayed after restart."
+        },
+        "tts_entity_id": {
+          "name": "Text-to-speech engine",
+          "description": "Override the default TTS engine configured in the Hano panel."
+        },
+        "tts_language": {
+          "name": "Language",
+          "description": "Override the configured speech language."
+        },
+        "voice_message": {
+          "name": "Spoken message",
+          "description": "Optional spoken text; otherwise use the message."
+        },
+        "volume": {
+          "name": "Announcement volume",
+          "description": "Only for explicitly enabled speakers supporting native announcement volume. Does not change ongoing music volume."
+        },
+        "icon": {
+          "name": "Icon",
+          "description": "Notification icon when supported by the destination."
+        },
+        "color": {
+          "name": "Color",
+          "description": "Hexadecimal color such as #03A9F4 when supported."
+        },
+        "timeout": {
+          "name": "Mobile display timeout",
+          "description": "Seconds before mobile dismissal, where supported. Zero uses the device default."
+        },
+        "buttons": {
+          "name": "Buttons",
+          "description": "Add freely named buttons. Use a link OR HA actions and optional resolution; links cannot confirm resolution."
+        }
+      },
+      "sections": {
+        "content": {
+          "name": "Content"
+        },
+        "recipients": {
+          "name": "Recipients and channels"
+        },
+        "availability": {
+          "name": "Availability and priority"
+        },
+        "lifecycle": {
+          "name": "Lifecycle"
+        },
+        "voice": {
+          "name": "Voice"
+        },
+        "appearance": {
+          "name": "Appearance"
+        }
+      }
+    },
+    "preview": {
+      "name": "Preview a notification",
+      "description": "Calculate destinations and waiting reasons without sending or saving a notification.",
+      "fields": {
+        "message": {
+          "name": "Message",
+          "description": "Text to notify. Templates are supported by Home Assistant."
+        },
+        "title": {
+          "name": "Title",
+          "description": "Optional notification title."
+        },
+        "notification_id": {
+          "name": "Notification identifier",
+          "description": "Reuse to update an active notification or resolve it later. Empty generates an identifier."
+        },
+        "image_url": {
+          "name": "Image URL",
+          "description": "Image URL supported by the destination."
+        },
+        "camera_entity_id": {
+          "name": "Camera",
+          "description": "Attach an image from this camera when supported."
+        },
+        "click_url": {
+          "name": "Open link",
+          "description": "Link opened when the notification is tapped."
+        },
+        "recipient_mode": {
+          "name": "Recipients",
+          "description": "Select configured people, all residents, current presence, or the nearest known position. No proximity entities are needed."
+        },
+        "person_entity_ids": {
+          "name": "People",
+          "description": "Configured people to include when using selected recipients."
+        },
+        "mobile_device_ids": {
+          "name": "Companion devices",
+          "description": "Send directly to these Companion devices; their owner’s sleep state is not applied."
+        },
+        "notify_entity_ids": {
+          "name": "Notify entities",
+          "description": "Send directly through these notify entities. Only supported options are accepted."
+        },
+        "channels": {
+          "name": "Channels",
+          "description": "Mobile, immediate voice, and persistent Home Assistant notifications can be combined."
+        },
+        "respect_sleep": {
+          "name": "Respect sleep",
+          "description": "Only send when configured sleep sensors confirm the person is awake. Independent of mobile priority."
+        },
+        "delivery": {
+          "name": "Delivery",
+          "description": "Send to eligible people now, or retain a pending delivery for each person until eligible."
+        },
+        "priority": {
+          "name": "Priority",
+          "description": "Requested mobile interruption level. Device and operating system settings still apply."
+        },
+        "cycle_mode": {
+          "name": "Cycle",
+          "description": "Update preserves delivery tracking and does not repeat voice. New starts a new cycle."
+        },
+        "expires_in": {
+          "name": "Expires after",
+          "description": "Seconds until global resolution. Zero means no expiration."
+        },
+        "resolve_on_clear": {
+          "name": "Resolve when cleared",
+          "description": "Resolve everywhere when Companion reports a mobile dismissal. Not all devices report this event."
+        },
+        "voice_mode": {
+          "name": "Voice destinations",
+          "description": "Use selected speakers, or speakers in configured occupied rooms."
+        },
+        "media_player_entity_ids": {
+          "name": "Media players",
+          "description": "Speakers for explicit voice destinations. Voice is immediate and is never replayed after restart."
+        },
+        "tts_entity_id": {
+          "name": "Text-to-speech engine",
+          "description": "Override the default TTS engine configured in the Hano panel."
+        },
+        "tts_language": {
+          "name": "Language",
+          "description": "Override the configured speech language."
+        },
+        "voice_message": {
+          "name": "Spoken message",
+          "description": "Optional spoken text; otherwise use the message."
+        },
+        "volume": {
+          "name": "Announcement volume",
+          "description": "Only for explicitly enabled speakers supporting native announcement volume. Does not change ongoing music volume."
+        },
+        "icon": {
+          "name": "Icon",
+          "description": "Notification icon when supported by the destination."
+        },
+        "color": {
+          "name": "Color",
+          "description": "Hexadecimal color such as #03A9F4 when supported."
+        },
+        "timeout": {
+          "name": "Mobile display timeout",
+          "description": "Seconds before mobile dismissal, where supported. Zero uses the device default."
+        },
+        "buttons": {
+          "name": "Buttons",
+          "description": "Add freely named buttons. Use a link OR HA actions and optional resolution; links cannot confirm resolution."
+        }
+      },
+      "sections": {
+        "content": {
+          "name": "Content"
+        },
+        "recipients": {
+          "name": "Recipients and channels"
+        },
+        "availability": {
+          "name": "Availability and priority"
+        },
+        "lifecycle": {
+          "name": "Lifecycle"
+        },
+        "voice": {
+          "name": "Voice"
+        },
+        "appearance": {
+          "name": "Appearance"
+        }
+      }
+    },
+    "resolve": {
+      "name": "Resolve a notification",
+      "description": "Close the active cycle, cancel pending deliveries and request clearing everywhere.",
+      "fields": {
+        "notification_id": {
+          "name": "Notification identifier",
+          "description": "Identifier of the active notification to resolve."
+        }
+      }
+    }
+  },
+  "selector": {
+    "recipient_mode": {
+      "options": {
+        "selected": "Selected people",
+        "all": "All configured people",
+        "present": "Present people",
+        "absent": "Absent people",
+        "nearest": "Nearest people"
+      }
+    },
+    "channels": {
+      "options": {
+        "mobile": "Mobile",
+        "voice": "Voice",
+        "persistent": "Persistent Home Assistant"
+      }
+    },
+    "delivery": {
+      "options": {
+        "immediate": "Eligible now",
+        "when_available": "Wait until available"
+      }
+    },
+    "priority": {
+      "options": {
+        "quiet": "Quiet",
+        "normal": "Normal",
+        "important": "Important",
+        "critical": "Critical"
+      }
+    },
+    "cycle_mode": {
+      "options": {
+        "update": "Update active cycle",
+        "new": "Start new cycle"
+      }
+    },
+    "voice_mode": {
+      "options": {
+        "explicit": "Selected speakers",
+        "occupied": "Occupied rooms"
+      }
+    },
+    "button": {
+      "fields": {
+        "id": "Identifier (letters, digits, _ or -)",
+        "label": "Label",
+        "uri": "Open link",
+        "actions": "Home Assistant actions",
+        "resolve": "Resolve after success"
+      }
+    }
+  }
+}

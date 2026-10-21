@@ -1,0 +1,474 @@
+send:
+  fields:
+    content:
+      collapsed: false
+      fields:
+        message:
+          required: true
+          selector:
+            text:
+              multiline: true
+        title:
+          required: false
+          selector:
+            text: {}
+        notification_id:
+          required: false
+          selector:
+            text: {}
+        image_url:
+          required: false
+          selector:
+            text: {}
+        camera_entity_id:
+          required: false
+          selector:
+            entity:
+              filter:
+                domain: camera
+              multiple: false
+        click_url:
+          required: false
+          selector:
+            text: {}
+    recipients:
+      collapsed: false
+      fields:
+        recipient_mode:
+          required: false
+          selector:
+            select:
+              translation_key: recipient_mode
+              options:
+              - selected
+              - all
+              - present
+              - absent
+              - nearest
+              multiple: false
+              mode: dropdown
+          default: selected
+        person_entity_ids:
+          required: false
+          selector:
+            entity:
+              filter:
+                domain: person
+              multiple: true
+        mobile_device_ids:
+          required: false
+          selector:
+            device:
+              filter:
+                integration: mobile_app
+              multiple: true
+        notify_entity_ids:
+          required: false
+          selector:
+            entity:
+              filter:
+                domain: notify
+              multiple: true
+        channels:
+          required: false
+          selector:
+            select:
+              translation_key: channels
+              options:
+              - mobile
+              - voice
+              - persistent
+              multiple: true
+              mode: dropdown
+          default:
+          - mobile
+    availability:
+      collapsed: true
+      fields:
+        respect_sleep:
+          required: false
+          selector:
+            boolean: {}
+          default: true
+        delivery:
+          required: false
+          selector:
+            select:
+              translation_key: delivery
+              options:
+              - immediate
+              - when_available
+              multiple: false
+              mode: dropdown
+          default: immediate
+        priority:
+          required: false
+          selector:
+            select:
+              translation_key: priority
+              options:
+              - quiet
+              - normal
+              - important
+              - critical
+              multiple: false
+              mode: dropdown
+          default: normal
+    lifecycle:
+      collapsed: true
+      fields:
+        cycle_mode:
+          required: false
+          selector:
+            select:
+              translation_key: cycle_mode
+              options:
+              - update
+              - new
+              multiple: false
+              mode: dropdown
+          default: update
+        expires_in:
+          required: false
+          selector:
+            number:
+              min: 0
+              mode: box
+              unit_of_measurement: s
+          default: 0
+        resolve_on_clear:
+          required: false
+          selector:
+            boolean: {}
+          default: false
+    voice:
+      collapsed: true
+      fields:
+        voice_mode:
+          required: false
+          selector:
+            select:
+              translation_key: voice_mode
+              options:
+              - explicit
+              - occupied
+              multiple: false
+              mode: dropdown
+          default: explicit
+        media_player_entity_ids:
+          required: false
+          selector:
+            entity:
+              filter:
+                domain: media_player
+              multiple: true
+        tts_entity_id:
+          required: false
+          selector:
+            entity:
+              filter:
+                domain: tts
+              multiple: false
+        tts_language:
+          required: false
+          selector:
+            language: {}
+        voice_message:
+          required: false
+          selector:
+            text:
+              multiline: true
+        volume:
+          required: false
+          selector:
+            number:
+              min: 0
+              mode: box
+              max: 100
+              unit_of_measurement: '%'
+    appearance:
+      collapsed: true
+      fields:
+        icon:
+          required: false
+          selector:
+            icon: {}
+        color:
+          required: false
+          selector:
+            text: {}
+        timeout:
+          required: false
+          selector:
+            number:
+              min: 0
+              mode: box
+              unit_of_measurement: s
+          default: 0
+    buttons:
+      required: false
+      selector:
+        object:
+          multiple: true
+          label_field: label
+          description_field: id
+          translation_key: button
+          fields:
+            id:
+              required: true
+              selector:
+                text: {}
+            label:
+              required: true
+              selector:
+                text: {}
+            uri:
+              selector:
+                text: {}
+            actions:
+              selector:
+                action: {}
+            resolve:
+              selector:
+                boolean: {}
+              default: false
+preview:
+  fields:
+    content:
+      collapsed: false
+      fields:
+        message:
+          required: true
+          selector:
+            text:
+              multiline: true
+        title:
+          required: false
+          selector:
+            text: {}
+        notification_id:
+          required: false
+          selector:
+            text: {}
+        image_url:
+          required: false
+          selector:
+            text: {}
+        camera_entity_id:
+          required: false
+          selector:
+            entity:
+              filter:
+                domain: camera
+              multiple: false
+        click_url:
+          required: false
+          selector:
+            text: {}
+    recipients:
+      collapsed: false
+      fields:
+        recipient_mode:
+          required: false
+          selector:
+            select:
+              translation_key: recipient_mode
+              options:
+              - selected
+              - all
+              - present
+              - absent
+              - nearest
+              multiple: false
+              mode: dropdown
+          default: selected
+        person_entity_ids:
+          required: false
+          selector:
+            entity:
+              filter:
+                domain: person
+              multiple: true
+        mobile_device_ids:
+          required: false
+          selector:
+            device:
+              filter:
+                integration: mobile_app
+              multiple: true
+        notify_entity_ids:
+          required: false
+          selector:
+            entity:
+              filter:
+                domain: notify
+              multiple: true
+        channels:
+          required: false
+          selector:
+            select:
+              translation_key: channels
+              options:
+              - mobile
+              - voice
+              - persistent
+              multiple: true
+              mode: dropdown
+          default:
+          - mobile
+    availability:
+      collapsed: true
+      fields:
+        respect_sleep:
+          required: false
+          selector:
+            boolean: {}
+          default: true
+        delivery:
+          required: false
+          selector:
+            select:
+              translation_key: delivery
+              options:
+              - immediate
+              - when_available
+              multiple: false
+              mode: dropdown
+          default: immediate
+        priority:
+          required: false
+          selector:
+            select:
+              translation_key: priority
+              options:
+              - quiet
+              - normal
+              - important
+              - critical
+              multiple: false
+              mode: dropdown
+          default: normal
+    lifecycle:
+      collapsed: true
+      fields:
+        cycle_mode:
+          required: false
+          selector:
+            select:
+              translation_key: cycle_mode
+              options:
+              - update
+              - new
+              multiple: false
+              mode: dropdown
+          default: update
+        expires_in:
+          required: false
+          selector:
+            number:
+              min: 0
+              mode: box
+              unit_of_measurement: s
+          default: 0
+        resolve_on_clear:
+          required: false
+          selector:
+            boolean: {}
+          default: false
+    voice:
+      collapsed: true
+      fields:
+        voice_mode:
+          required: false
+          selector:
+            select:
+              translation_key: voice_mode
+              options:
+              - explicit
+              - occupied
+              multiple: false
+              mode: dropdown
+          default: explicit
+        media_player_entity_ids:
+          required: false
+          selector:
+            entity:
+              filter:
+                domain: media_player
+              multiple: true
+        tts_entity_id:
+          required: false
+          selector:
+            entity:
+              filter:
+                domain: tts
+              multiple: false
+        tts_language:
+          required: false
+          selector:
+            language: {}
+        voice_message:
+          required: false
+          selector:
+            text:
+              multiline: true
+        volume:
+          required: false
+          selector:
+            number:
+              min: 0
+              mode: box
+              max: 100
+              unit_of_measurement: '%'
+    appearance:
+      collapsed: true
+      fields:
+        icon:
+          required: false
+          selector:
+            icon: {}
+        color:
+          required: false
+          selector:
+            text: {}
+        timeout:
+          required: false
+          selector:
+            number:
+              min: 0
+              mode: box
+              unit_of_measurement: s
+          default: 0
+    buttons:
+      required: false
+      selector:
+        object:
+          multiple: true
+          label_field: label
+          description_field: id
+          translation_key: button
+          fields:
+            id:
+              required: true
+              selector:
+                text: {}
+            label:
+              required: true
+              selector:
+                text: {}
+            uri:
+              selector:
+                text: {}
+            actions:
+              selector:
+                action: {}
+            resolve:
+              selector:
+                boolean: {}
+              default: false
+resolve:
+  fields:
+    notification_id:
+      required: true
+      selector:
+        text: {}

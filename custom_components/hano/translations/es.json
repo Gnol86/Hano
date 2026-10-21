@@ -1,0 +1,354 @@
+{
+  "title": "Hano",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Hano",
+        "description": "Configura personas, dispositivos y habitaciones en el panel lateral Hano. Hano no envía notificaciones hasta que se llama a una acción."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Solo se necesita una instalación de Hano.",
+      "already_configured": "Solo se necesita una instalación de Hano.",
+      "already_in_progress": "La configuración ya está en curso."
+    }
+  },
+  "exceptions": {
+    "operation_failed": {
+      "message": "Error de la operación ({code}): {detail}"
+    }
+  },
+  "services": {
+    "send": {
+      "name": "Enviar una notificación",
+      "description": "Enviar, actualizar o iniciar un ciclo. Una llamada aceptada no confirma la recepción humana.",
+      "fields": {
+        "message": {
+          "name": "Mensaje",
+          "description": "Texto de la notificación. Admite plantillas de Home Assistant."
+        },
+        "title": {
+          "name": "Título",
+          "description": "Título opcional de la notificación."
+        },
+        "notification_id": {
+          "name": "Identificador de notificación",
+          "description": "Reutilízalo para actualizar o resolver una notificación. Vacío genera un identificador."
+        },
+        "image_url": {
+          "name": "URL de imagen",
+          "description": "URL de imagen compatible con el destino."
+        },
+        "camera_entity_id": {
+          "name": "Cámara",
+          "description": "Adjuntar una imagen de esta cámara si el destino lo permite."
+        },
+        "click_url": {
+          "name": "Enlace para abrir",
+          "description": "Enlace que se abre al tocar la notificación."
+        },
+        "recipient_mode": {
+          "name": "Destinatarios",
+          "description": "Elegir personas configuradas, todos los residentes, su presencia o la posición conocida más cercana. No requiere entidades proximity."
+        },
+        "person_entity_ids": {
+          "name": "Personas",
+          "description": "Personas configuradas que se incluirán en la selección."
+        },
+        "mobile_device_ids": {
+          "name": "Dispositivos Companion",
+          "description": "Envío directo a estos dispositivos Companion sin aplicar el sueño de su propietario."
+        },
+        "notify_entity_ids": {
+          "name": "Entidades de notificación",
+          "description": "Envío directo mediante estas entidades notify. Solo se aceptan opciones compatibles."
+        },
+        "channels": {
+          "name": "Canales",
+          "description": "Combinar móvil, voz inmediata y notificación persistente de Home Assistant."
+        },
+        "respect_sleep": {
+          "name": "Respetar el sueño",
+          "description": "Enviar solo cuando los sensores configurados confirmen que la persona está despierta. Independiente de la prioridad móvil."
+        },
+        "delivery": {
+          "name": "Envío",
+          "description": "Enviar a las personas disponibles ahora o mantener una entrega pendiente individual hasta que estén disponibles."
+        },
+        "priority": {
+          "name": "Prioridad",
+          "description": "Nivel de interrupción móvil solicitado. Se mantienen los ajustes del sistema y del dispositivo."
+        },
+        "cycle_mode": {
+          "name": "Ciclo",
+          "description": "Actualizar conserva el seguimiento y no repite la voz. Nuevo inicia un ciclo nuevo."
+        },
+        "expires_in": {
+          "name": "Caduca después de",
+          "description": "Segundos hasta la resolución global. Cero significa sin caducidad."
+        },
+        "resolve_on_clear": {
+          "name": "Resolver al borrar",
+          "description": "Resolver en todos los destinos cuando Companion informa de un borrado móvil. No todos los dispositivos envían este evento."
+        },
+        "voice_mode": {
+          "name": "Destinos de voz",
+          "description": "Usar altavoces seleccionados o los de las habitaciones configuradas y ocupadas."
+        },
+        "media_player_entity_ids": {
+          "name": "Reproductores multimedia",
+          "description": "Altavoces explícitos. La voz es inmediata y nunca se repite después de reiniciar."
+        },
+        "tts_entity_id": {
+          "name": "Motor de texto a voz",
+          "description": "Reemplazar el motor TTS predeterminado del panel Hano."
+        },
+        "tts_language": {
+          "name": "Idioma",
+          "description": "Reemplazar el idioma de voz configurado."
+        },
+        "voice_message": {
+          "name": "Mensaje de voz",
+          "description": "Texto de voz opcional; de lo contrario se usa el mensaje."
+        },
+        "volume": {
+          "name": "Volumen del anuncio",
+          "description": "Solo para altavoces activados explícitamente y compatibles con el volumen nativo de anuncios. No cambia el volumen de la música."
+        },
+        "icon": {
+          "name": "Icono",
+          "description": "Icono de notificación si el destino es compatible."
+        },
+        "color": {
+          "name": "Color",
+          "description": "Color hexadecimal, por ejemplo #03A9F4, si es compatible."
+        },
+        "timeout": {
+          "name": "Tiempo de visualización móvil",
+          "description": "Segundos antes del borrado móvil, si es compatible. Cero usa el ajuste del dispositivo."
+        },
+        "buttons": {
+          "name": "Botones",
+          "description": "Añadir botones personalizados. Elegir un enlace O acciones HA con resolución opcional; los enlaces no confirman la resolución."
+        }
+      },
+      "sections": {
+        "content": {
+          "name": "Contenido"
+        },
+        "recipients": {
+          "name": "Destinatarios y canales"
+        },
+        "availability": {
+          "name": "Disponibilidad y prioridad"
+        },
+        "lifecycle": {
+          "name": "Ciclo de vida"
+        },
+        "voice": {
+          "name": "Voz"
+        },
+        "appearance": {
+          "name": "Apariencia"
+        }
+      }
+    },
+    "preview": {
+      "name": "Simular una notificación",
+      "description": "Calcular destinos y motivos de espera sin enviar ni guardar una notificación.",
+      "fields": {
+        "message": {
+          "name": "Mensaje",
+          "description": "Texto de la notificación. Admite plantillas de Home Assistant."
+        },
+        "title": {
+          "name": "Título",
+          "description": "Título opcional de la notificación."
+        },
+        "notification_id": {
+          "name": "Identificador de notificación",
+          "description": "Reutilízalo para actualizar o resolver una notificación. Vacío genera un identificador."
+        },
+        "image_url": {
+          "name": "URL de imagen",
+          "description": "URL de imagen compatible con el destino."
+        },
+        "camera_entity_id": {
+          "name": "Cámara",
+          "description": "Adjuntar una imagen de esta cámara si el destino lo permite."
+        },
+        "click_url": {
+          "name": "Enlace para abrir",
+          "description": "Enlace que se abre al tocar la notificación."
+        },
+        "recipient_mode": {
+          "name": "Destinatarios",
+          "description": "Elegir personas configuradas, todos los residentes, su presencia o la posición conocida más cercana. No requiere entidades proximity."
+        },
+        "person_entity_ids": {
+          "name": "Personas",
+          "description": "Personas configuradas que se incluirán en la selección."
+        },
+        "mobile_device_ids": {
+          "name": "Dispositivos Companion",
+          "description": "Envío directo a estos dispositivos Companion sin aplicar el sueño de su propietario."
+        },
+        "notify_entity_ids": {
+          "name": "Entidades de notificación",
+          "description": "Envío directo mediante estas entidades notify. Solo se aceptan opciones compatibles."
+        },
+        "channels": {
+          "name": "Canales",
+          "description": "Combinar móvil, voz inmediata y notificación persistente de Home Assistant."
+        },
+        "respect_sleep": {
+          "name": "Respetar el sueño",
+          "description": "Enviar solo cuando los sensores configurados confirmen que la persona está despierta. Independiente de la prioridad móvil."
+        },
+        "delivery": {
+          "name": "Envío",
+          "description": "Enviar a las personas disponibles ahora o mantener una entrega pendiente individual hasta que estén disponibles."
+        },
+        "priority": {
+          "name": "Prioridad",
+          "description": "Nivel de interrupción móvil solicitado. Se mantienen los ajustes del sistema y del dispositivo."
+        },
+        "cycle_mode": {
+          "name": "Ciclo",
+          "description": "Actualizar conserva el seguimiento y no repite la voz. Nuevo inicia un ciclo nuevo."
+        },
+        "expires_in": {
+          "name": "Caduca después de",
+          "description": "Segundos hasta la resolución global. Cero significa sin caducidad."
+        },
+        "resolve_on_clear": {
+          "name": "Resolver al borrar",
+          "description": "Resolver en todos los destinos cuando Companion informa de un borrado móvil. No todos los dispositivos envían este evento."
+        },
+        "voice_mode": {
+          "name": "Destinos de voz",
+          "description": "Usar altavoces seleccionados o los de las habitaciones configuradas y ocupadas."
+        },
+        "media_player_entity_ids": {
+          "name": "Reproductores multimedia",
+          "description": "Altavoces explícitos. La voz es inmediata y nunca se repite después de reiniciar."
+        },
+        "tts_entity_id": {
+          "name": "Motor de texto a voz",
+          "description": "Reemplazar el motor TTS predeterminado del panel Hano."
+        },
+        "tts_language": {
+          "name": "Idioma",
+          "description": "Reemplazar el idioma de voz configurado."
+        },
+        "voice_message": {
+          "name": "Mensaje de voz",
+          "description": "Texto de voz opcional; de lo contrario se usa el mensaje."
+        },
+        "volume": {
+          "name": "Volumen del anuncio",
+          "description": "Solo para altavoces activados explícitamente y compatibles con el volumen nativo de anuncios. No cambia el volumen de la música."
+        },
+        "icon": {
+          "name": "Icono",
+          "description": "Icono de notificación si el destino es compatible."
+        },
+        "color": {
+          "name": "Color",
+          "description": "Color hexadecimal, por ejemplo #03A9F4, si es compatible."
+        },
+        "timeout": {
+          "name": "Tiempo de visualización móvil",
+          "description": "Segundos antes del borrado móvil, si es compatible. Cero usa el ajuste del dispositivo."
+        },
+        "buttons": {
+          "name": "Botones",
+          "description": "Añadir botones personalizados. Elegir un enlace O acciones HA con resolución opcional; los enlaces no confirman la resolución."
+        }
+      },
+      "sections": {
+        "content": {
+          "name": "Contenido"
+        },
+        "recipients": {
+          "name": "Destinatarios y canales"
+        },
+        "availability": {
+          "name": "Disponibilidad y prioridad"
+        },
+        "lifecycle": {
+          "name": "Ciclo de vida"
+        },
+        "voice": {
+          "name": "Voz"
+        },
+        "appearance": {
+          "name": "Apariencia"
+        }
+      }
+    },
+    "resolve": {
+      "name": "Resolver una notificación",
+      "description": "Cerrar el ciclo activo, cancelar entregas pendientes y solicitar el borrado en todos los destinos.",
+      "fields": {
+        "notification_id": {
+          "name": "Identificador de notificación",
+          "description": "Identificador de la notificación activa que se resolverá."
+        }
+      }
+    }
+  },
+  "selector": {
+    "recipient_mode": {
+      "options": {
+        "selected": "Personas seleccionadas",
+        "all": "Todas las personas configuradas",
+        "present": "Personas presentes",
+        "absent": "Personas ausentes",
+        "nearest": "Personas más cercanas"
+      }
+    },
+    "channels": {
+      "options": {
+        "mobile": "Móvil",
+        "voice": "Voz",
+        "persistent": "Notificación persistente de Home Assistant"
+      }
+    },
+    "delivery": {
+      "options": {
+        "immediate": "Disponibles ahora",
+        "when_available": "Esperar disponibilidad"
+      }
+    },
+    "priority": {
+      "options": {
+        "quiet": "Silenciosa",
+        "normal": "Normal",
+        "important": "Importante",
+        "critical": "Crítica"
+      }
+    },
+    "cycle_mode": {
+      "options": {
+        "update": "Actualizar ciclo activo",
+        "new": "Iniciar ciclo nuevo"
+      }
+    },
+    "voice_mode": {
+      "options": {
+        "explicit": "Altavoces seleccionados",
+        "occupied": "Habitaciones ocupadas"
+      }
+    },
+    "button": {
+      "fields": {
+        "id": "Identificador (letras, dígitos, _ o -)",
+        "label": "Etiqueta",
+        "uri": "Enlace para abrir",
+        "actions": "Acciones de Home Assistant",
+        "resolve": "Resolver tras completarse"
+      }
+    }
+  }
+}

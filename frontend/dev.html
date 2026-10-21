@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Hano · Local demo</title>
+    <link rel="icon" href="data:," />
+    <style>
+      :root {
+        font-family: Roboto, system-ui, sans-serif;
+        --primary-background-color: #fafafa;
+        --ha-card-background: #fff;
+        --primary-text-color: #212121;
+        --secondary-text-color: #727272;
+        --divider-color: #e0e0e0;
+        --primary-color: #03a9f4;
+        --text-primary-color: #fff;
+        --app-header-background-color: #fff;
+        --app-header-text-color: #212121;
+        color-scheme: light;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+      }
+      .demo {
+        position: fixed;
+        z-index: 10;
+        right: 14px;
+        bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 6px 10px;
+        border: 1px solid var(--divider-color);
+        border-radius: 10px;
+        background: var(--ha-card-background);
+        color: var(--secondary-text-color);
+        font-size: 11px;
+        box-shadow: 0 1px 4px #0001;
+      }
+      .demo select,
+      .demo button {
+        font: inherit;
+        padding: 4px;
+        border-radius: 4px;
+        border: 1px solid var(--divider-color);
+        background: transparent;
+        color: inherit;
+      }
+      .demo select option {
+        color: var(--primary-text-color);
+        background: var(--ha-card-background);
+      }
+      .demo span {
+        max-width: 260px;
+      }
+      .menu-toast {
+        position: fixed;
+        z-index: 11;
+        bottom: 60px;
+        left: 15px;
+        padding: 12px;
+        background: var(--ha-card-background);
+        border: 1px solid var(--divider-color);
+        color: var(--primary-text-color);
+        border-radius: 8px;
+      }
+      .demo-hide .demo {
+        display: none;
+      }
+      @media (max-width: 600px) {
+        .demo {
+          font-size: 9px;
+          right: 8px;
+          bottom: 5px;
+          padding: 4px 6px;
+        }
+        .demo span {
+          max-width: 130px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <hano-panel></hano-panel>
+    <div class="demo">
+      <span id="demo-label"></span
+      ><select aria-label="Language" id="language">
+        <option value="en">English</option>
+        <option value="fr">Français</option>
+        <option value="es">Español</option></select
+      ><button id="theme"></button><button id="reset"></button>
+    </div>
+    <script type="module" src="./demo.js"></script>
+  </body>
+</html>

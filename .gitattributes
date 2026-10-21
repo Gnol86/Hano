@@ -1,0 +1,2 @@
+# Bundled Lit includes intentional whitespace in regular-expression strings.
+custom_components/hano/frontend/*.js -whitespace linguist-generated=true

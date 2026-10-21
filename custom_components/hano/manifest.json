@@ -1,0 +1,15 @@
+{
+  "domain": "hano",
+  "name": "Hano",
+  "after_dependencies": ["mobile_app", "notify", "tts"],
+  "codeowners": ["@Gnol86"],
+  "config_flow": true,
+  "dependencies": ["frontend", "http", "panel_custom", "persistent_notification", "websocket_api"],
+  "documentation": "https://github.com/Gnol86/Hano",
+  "integration_type": "service",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/Gnol86/Hano/issues",
+  "requirements": [],
+  "single_config_entry": true,
+  "version": "0.1.0b1"
+}
