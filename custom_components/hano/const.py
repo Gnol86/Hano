@@ -2,5 +2,5 @@
 
 DOMAIN = "hano"
 NAME = "Hano"
-VERSION = "0.1.0"
+VERSION = "0.1.1"
 STORAGE_VERSION = 1

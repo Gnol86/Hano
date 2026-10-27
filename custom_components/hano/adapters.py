@@ -25,8 +25,8 @@ def mobile_catalog(hass: HomeAssistant) -> list[dict[str, Any]]:
         service = f"notify.{slugify(f'mobile_app_{name}')}"
         if not hass.services.has_service(*service.split(".", 1)):
             continue
-        device = registry.async_get_device(
-            identifiers={("mobile_app", entry.data.get("device_id", ""))}
+        device = registry.async_get_device_by_identifier(
+            ("mobile_app", entry.data.get("device_id", "")), entry.entry_id
         )
         if device is None:
             continue

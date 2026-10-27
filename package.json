@@ -1,7 +1,7 @@
 {
   "name": "hano-panel",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "scripts": {
     "build": "esbuild frontend/src/hano-panel.ts --bundle --minify --format=esm --target=es2022 --legal-comments=eof --outfile=custom_components/hano/frontend/hano-panel.js",

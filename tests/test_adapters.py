@@ -159,6 +159,48 @@ async def test_registered_mobile_catalog_and_notify_entity_upgrade(hass):
         )
 
 
+@pytest.mark.parametrize("has_own_device", [False, True])
+async def test_mobile_catalog_scopes_shared_identifiers_to_registration(
+    hass, has_own_device
+):
+    foreign_entry = MockConfigEntry(domain="mobile_app", title="Other Phone", data={})
+    foreign_entry.add_to_hass(hass)
+    registry = dr.async_get(hass)
+    identifiers = {("mobile_app", "shared-id")}
+    foreign_device = registry.async_get_or_create(
+        config_entry_id=foreign_entry.entry_id, identifiers=identifiers
+    )
+    entry = MockConfigEntry(
+        domain="mobile_app",
+        title="Expected Phone",
+        data={
+            "device_name": "Expected Phone",
+            "device_id": "shared-id",
+            "manufacturer": "Apple",
+        },
+    )
+    entry.add_to_hass(hass)
+    hass.services.async_register("notify", "mobile_app_expected_phone", AsyncMock())
+    own_device = (
+        registry.async_get_or_create(
+            config_entry_id=entry.entry_id, identifiers=identifiers
+        )
+        if has_own_device
+        else None
+    )
+
+    rows = mobile_catalog(hass)
+
+    if own_device is None:
+        assert rows == []
+    else:
+        assert len(rows) == 1
+        assert rows[0]["entry_id"] == entry.entry_id
+        assert rows[0]["device_id"] == own_device.id
+        assert rows[0]["device_id"] != foreign_device.id
+        assert rows[0]["service"] == "notify.mobile_app_expected_phone"
+
+
 @pytest.mark.parametrize("platform", ["ios", "android"])
 async def test_camera_and_icon_are_adapted_to_mobile_platform(hass, platform):
     value = request(

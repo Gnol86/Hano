@@ -18,7 +18,7 @@ def release_tree(tmp_path):
         "uv.lock",
         "package.json",
         "package-lock.json",
-        "releases/0.1.0.md",
+        "releases/0.1.1.md",
     ):
         destination = tmp_path / name
         destination.parent.mkdir(parents=True, exist_ok=True)
@@ -27,8 +27,8 @@ def release_tree(tmp_path):
 
 
 def test_stable_metadata_is_consistent(release_tree):
-    assert validate_release(release_tree, "v0.1.0") == {
-        "version": "0.1.0",
+    assert validate_release(release_tree, "v0.1.1") == {
+        "version": "0.1.1",
         "prerelease": "false",
     }
 
@@ -45,10 +45,10 @@ def test_stale_frontend_cannot_be_published(release_tree):
     data["version"] = "0.1.0-beta.2"
     package.write_text(json.dumps(data))
     with pytest.raises(ValueError, match="Frontend"):
-        validate_release(release_tree, "v0.1.0")
+        validate_release(release_tree, "v0.1.1")
 
 
 def test_empty_release_notes_are_rejected(release_tree):
-    (release_tree / "releases/0.1.0.md").write_text("")
+    (release_tree / "releases/0.1.1.md").write_text("")
     with pytest.raises(ValueError, match="notes"):
-        validate_release(release_tree, "v0.1.0")
+        validate_release(release_tree, "v0.1.1")
