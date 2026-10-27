@@ -528,6 +528,7 @@ export class HanoPanel extends LitElement {
               </div>
               <small>${delivery.target}</small
               >${delivery.reason ? html`<div class="help">${this.text(delivery.reason)}</div>` : nothing}
+              ${record.request.reminder_interval && delivery.channel === "mobile" ? html`<div class="help">${this.t("reminderCount")}: ${delivery.reminder_count ?? 0} / ${record.request.reminder_limit}${delivery.next_reminder_at ? html` · ${this.t("nextReminder")}: ${this.date(delivery.next_reminder_at)}` : nothing}</div>` : nothing}
             </div>`,
         )}
       </section>
@@ -927,12 +928,19 @@ export class HanoPanel extends LitElement {
         (values) => this.editRequest("channels", values),
       )}${this.check("respectSleep", request.respect_sleep, (value) => this.editRequest("respect_sleep", value))}${this.select("priority", request.priority, ["quiet", "normal", "important", "critical"], (value) => this.editRequest("priority", value as Request["priority"]))}
       <p class="help">${this.t("priorityHelp")}</p>
+      ${this.field("iosSound", request.ios_sound ?? "", (value) => this.editRequest("ios_sound", value))}
+      <p class="help">${this.t("iosSoundHelp")}</p>
       <details>
         <summary>${this.t("lifecycle")}</summary>
         <div class="grid">
           ${this.select("cycle", request.cycle_mode, ["update", "new"], (value) => this.editRequest("cycle_mode", value as Request["cycle_mode"]))}${this.field("expiration", request.expires_in, (value) => this.editRequest("expires_in", Number(value)), "number", { min: 0, step: "1" })}
         </div>
         ${this.check("resolveOnClear", request.resolve_on_clear, (value) => this.editRequest("resolve_on_clear", value))}
+        <div class="grid">
+          ${this.field("reminderInterval", request.reminder_interval ?? 0, (value) => this.editRequest("reminder_interval", Number(value)), "number", { min: 0, max: 86400, step: "1" })}
+          ${this.field("reminderLimit", request.reminder_limit ?? 0, (value) => this.editRequest("reminder_limit", Number(value)), "number", { min: 0, max: 100, step: "1" })}
+        </div>
+        <p class="help">${this.t("reminderHelp")}</p>
       </details>
       <details>
         <summary>${this.t("advanced")}</summary>

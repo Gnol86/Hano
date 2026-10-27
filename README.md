@@ -16,7 +16,7 @@ choose the trigger, message, recipients, and options. Hano tracks each destinati
 waits when requested, and closes the notification across its supported channels.
 There are no notification profiles to maintain.
 
-**Current stable release: `0.1.1`. Requires Home Assistant 2026.10 or newer.**
+**Current stable release: `0.2.0`. Requires Home Assistant 2026.10 or newer.**
 Hano can be installed through a HACS custom repository; it is not listed in the
 HACS default catalogue. This release does not install itself, migrate existing
 automations, or stop an AppDaemon application.
@@ -60,7 +60,7 @@ another push service.
 
 1. In HACS, open **Custom repositories** and add
    `https://github.com/Gnol86/Hano` with the **Integration** category.
-2. Open Hano's download dialog, select **`0.1.1`**, and download it.
+2. Open Hano's download dialog, select **`0.2.0`**, and download it.
 3. Restart Home Assistant to load the integration files.
 4. Go to **Settings → Devices & services → Add integration**, search for **Hano**,
    and confirm setup.
@@ -152,8 +152,15 @@ platform-specific requirements; on iOS, an icon needs a title, and a color needs
 both. Unsupported combinations fail explicitly. Critical priority does not bypass Hano's sleep
 setting or guarantee that a device will sound an alert.
 
-Voice is immediate only. There are no automatic reminders, retries of failed sends,
-or escalation rules; keep those triggers in your automations. Per-announcement
+Optional mobile reminders are disabled by default. Each action can set an interval
+and a finite limit, with a resolution-only acknowledgement button. One person's
+acknowledgement stops reminders for the whole cycle; technical receipt is not
+proof of reading. See [reminder rules](docs/actions.md#optional-mobile-reminders).
+You can also choose an [imported iOS sound](docs/ios-sounds.md) for a longer single
+alert while leaving reminders disabled.
+
+Voice is immediate only. Failed or uncertain sends are not retried automatically,
+and there are no escalation rules. Per-announcement
 volume is limited to Sonos players explicitly marked as verified in Hano and uses
 the native announcement API. Hano does not temporarily change player volume and
 restore it on a timer.
@@ -180,7 +187,7 @@ does not establish reliability on your own phones or speakers.
 - [Architecture](docs/architecture.md)
 - [Migration guide](docs/migration.md)
 - [Development and validation](docs/development.md)
-- [Release notes](releases/0.1.1.md)
+- [Release notes](releases/0.2.0.md)
 - [Contributing](CONTRIBUTING.md)
 
 Hano follows the interface conventions of [Halo](https://github.com/Gnol86/Halo),

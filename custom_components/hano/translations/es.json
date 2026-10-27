@@ -79,6 +79,10 @@
           "name": "Prioridad",
           "description": "Nivel de interrupción móvil solicitado. Se mantienen los ajustes del sistema y del dispositivo."
         },
+        "ios_sound": {
+          "name": "Nombre del archivo de sonido iOS (opcional)",
+          "description": "Nombre con .wav, .caf o .aiff. Importa primero el sonido en Companion en cada iPhone seleccionado; debe durar menos de 30 segundos. Vacío conserva el sonido habitual. Requiere el canal móvil y solo destinos iOS; incompatible con prioridad discreta. Deja los recordatorios desactivados para una sola alerta."
+        },
         "cycle_mode": {
           "name": "Ciclo",
           "description": "Actualizar conserva el seguimiento y no repite la voz. Nuevo inicia un ciclo nuevo."
@@ -130,6 +134,14 @@
         "buttons": {
           "name": "Botones",
           "description": "Añadir botones personalizados. Elegir un enlace O acciones HA con resolución opcional; los enlaces no confirman la resolución."
+        },
+        "reminder_interval": {
+          "name": "Intervalo de recordatorios",
+          "description": "Segundos entre recordatorios móviles (60–86400). Pon intervalo y límite a 0 para desactivar. Requiere un botón de confirmación que resuelva sin acciones. La lectura y la apertura no se notifican de forma fiable; una confirmación resuelve el ciclo para todos. Se respetan sueño y presencia. Sin repetir voz ni recuperar recordatorios tras reiniciar."
+        },
+        "reminder_limit": {
+          "name": "Máximo de recordatorios por destino",
+          "description": "1–100 intentos adicionales por destino móvil; 0 desactiva con intervalo 0. No se reintentan envíos fallidos o inciertos. Las actualizaciones conservan contadores y reinician el intervalo; un nuevo ciclo los reinicia. Resolver o caducar cancela los recordatorios."
         }
       },
       "sections": {
@@ -213,6 +225,10 @@
           "name": "Prioridad",
           "description": "Nivel de interrupción móvil solicitado. Se mantienen los ajustes del sistema y del dispositivo."
         },
+        "ios_sound": {
+          "name": "Nombre del archivo de sonido iOS (opcional)",
+          "description": "Nombre con .wav, .caf o .aiff. Importa primero el sonido en Companion en cada iPhone seleccionado; debe durar menos de 30 segundos. Vacío conserva el sonido habitual. Requiere el canal móvil y solo destinos iOS; incompatible con prioridad discreta. Deja los recordatorios desactivados para una sola alerta."
+        },
         "cycle_mode": {
           "name": "Ciclo",
           "description": "Actualizar conserva el seguimiento y no repite la voz. Nuevo inicia un ciclo nuevo."
@@ -264,6 +280,14 @@
         "buttons": {
           "name": "Botones",
           "description": "Añadir botones personalizados. Elegir un enlace O acciones HA con resolución opcional; los enlaces no confirman la resolución."
+        },
+        "reminder_interval": {
+          "name": "Intervalo de recordatorios",
+          "description": "Segundos entre recordatorios móviles (60–86400). Pon intervalo y límite a 0 para desactivar. Requiere un botón de confirmación que resuelva sin acciones. La lectura y la apertura no se notifican de forma fiable; una confirmación resuelve el ciclo para todos. Se respetan sueño y presencia. Sin repetir voz ni recuperar recordatorios tras reiniciar."
+        },
+        "reminder_limit": {
+          "name": "Máximo de recordatorios por destino",
+          "description": "1–100 intentos adicionales por destino móvil; 0 desactiva con intervalo 0. No se reintentan envíos fallidos o inciertos. Las actualizaciones conservan contadores y reinician el intervalo; un nuevo ciclo los reinicia. Resolver o caducar cancela los recordatorios."
         }
       },
       "sections": {

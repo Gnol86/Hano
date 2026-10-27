@@ -403,6 +403,90 @@ test("priority changes do not disable sleep", async () => {
   assert.equal((calls[0].request as Request).respect_sleep, true);
   assert.equal((calls[0].request as Request).priority, "critical");
 });
+test("custom iOS sound reaches preview and explicit send without extra calls", async () => {
+  const { panel, calls } = await mount();
+  click(panel, "Tests et réglages");
+  await settle(panel);
+  input(panel, "message", "Sound test");
+  select(panel, "priority", "critical");
+  input(panel, "iosSound", "hano_alarm_25s.wav");
+  await settle(panel);
+  click(panel, "Simuler sans envoyer");
+  await settle(panel);
+  assert.deepEqual(
+    calls.map((call) => call.type),
+    ["hano/preview"],
+  );
+  assert.equal((calls[0].request as Request).ios_sound, "hano_alarm_25s.wav");
+  click(panel, "Envoyer un test réel");
+  await settle(panel);
+  assert.deepEqual(
+    calls.map((call) => call.type),
+    ["hano/preview", "hano/send"],
+  );
+  assert.deepEqual(calls[1].request, calls[0].request);
+  assert.equal((calls[1].request as Request).priority, "critical");
+  input(panel, "iosSound", "");
+  click(panel, "Simuler sans envoyer");
+  await settle(panel);
+  assert.equal((calls[2].request as Request).ios_sound, "");
+});
+test("records stored without ios_sound still render", async () => {
+  const { panel, emit } = await mount();
+  const legacy = fixture();
+  delete legacy.notifications[0].request.ios_sound;
+  delete legacy.notifications[0].request.reminder_interval;
+  delete legacy.notifications[0].request.reminder_limit;
+  emit(legacy);
+  await settle(panel);
+  click(panel, "Laundry finishedwasherEn attente");
+  await settle(panel);
+  assert.match(panel.shadowRoot!.textContent!, /Laundry finished/);
+  click(panel, "Tests et réglages");
+  await settle(panel);
+  assert.equal(
+    panel.shadowRoot!.querySelector<HTMLInputElement>(
+      '[data-field="iosSound"]',
+    )!.value,
+    "",
+  );
+});
+test("optional reminders are sent only through explicit composer actions", async () => {
+  const { panel, calls, emit } = await mount();
+  click(panel, "Tests et réglages");
+  await settle(panel);
+  input(panel, "message", "Acknowledge this");
+  input(panel, "reminderInterval", "300");
+  input(panel, "reminderLimit", "3");
+  await settle(panel);
+  assert.equal(calls.length, 0);
+  assert.match(panel.shadowRoot!.textContent!, /acquittement/);
+  click(panel, "Simuler sans envoyer");
+  await settle(panel);
+  click(panel, "Envoyer un test réel");
+  await settle(panel);
+  assert.deepEqual(
+    calls.map((call) => call.type),
+    ["hano/preview", "hano/send"],
+  );
+  for (const call of calls) {
+    assert.equal((call.request as Request).reminder_interval, 300);
+    assert.equal((call.request as Request).reminder_limit, 3);
+  }
+  const state = fixture();
+  state.notifications[0].request.reminder_interval = 300;
+  state.notifications[0].request.reminder_limit = 3;
+  state.notifications[0].deliveries[0].reminder_count = 1;
+  state.notifications[0].deliveries[0].next_reminder_at =
+    "2026-10-28T12:00:00Z";
+  emit(state);
+  click(panel, "Notifications");
+  await settle(panel);
+  click(panel, "Laundry finishedwasherEn attente");
+  await settle(panel);
+  assert.match(panel.shadowRoot!.textContent!, /Tentatives de rappel: 1 \/ 3/);
+  assert.match(panel.shadowRoot!.textContent!, /Prochain rappel/);
+});
 test("empty message cannot send", async () => {
   const { panel, calls } = await mount();
   click(panel, "Tests et réglages");
@@ -661,7 +745,9 @@ test("button IDs can be edited without replacing their focused input", async () 
 
 test("rooms can be added and saved on HTTP without crypto.randomUUID", async (t) => {
   const original = Object.getOwnPropertyDescriptor(globalThis, "crypto")!;
-  const getRandomValues = globalThis.crypto.getRandomValues.bind(globalThis.crypto);
+  const getRandomValues = globalThis.crypto.getRandomValues.bind(
+    globalThis.crypto,
+  );
   Object.defineProperty(globalThis, "crypto", {
     configurable: true,
     value: { getRandomValues },
@@ -699,7 +785,9 @@ test("rooms can be added and saved on HTTP without crypto.randomUUID", async (t)
 
 test("buttons can be added and previewed on HTTP without crypto.randomUUID", async (t) => {
   const original = Object.getOwnPropertyDescriptor(globalThis, "crypto")!;
-  const getRandomValues = globalThis.crypto.getRandomValues.bind(globalThis.crypto);
+  const getRandomValues = globalThis.crypto.getRandomValues.bind(
+    globalThis.crypto,
+  );
   Object.defineProperty(globalThis, "crypto", {
     configurable: true,
     value: { getRandomValues },

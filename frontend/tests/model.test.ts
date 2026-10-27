@@ -6,6 +6,9 @@ test("defaults use individual waiting opt-in, independent sleep and priority, no
   const request = emptyRequest();
   assert.equal(request.respect_sleep, true);
   assert.equal(request.priority, "normal");
+  assert.equal(request.ios_sound, "");
+  assert.equal(request.reminder_interval, 0);
+  assert.equal(request.reminder_limit, 0);
   assert.equal(request.delivery, "immediate");
   assert.deepEqual(request.buttons, []);
   assert.deepEqual(request.channels, ["mobile"]);

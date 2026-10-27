@@ -123,7 +123,8 @@ Perform this separately from publishing or downloading the integration.
 5. Search all automation/script sources again for `NOTIFIER` and
    `NOTIFIER_DISCARD`. Only after the migrated paths have been verified should
    Notifier be disabled in AppDaemon. Do not stop other AppDaemon applications.
-6. Validate Hano after a controlled HA restart: an accepted send must not repeat;
+6. Validate Hano after a controlled HA restart: an accepted send must not repeat
+   at startup (optional reminders wait a full interval without catch-up);
    a pending person should receive only after becoming eligible; resolution must
    cancel every remaining wait.
 

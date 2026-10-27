@@ -44,6 +44,9 @@ export interface Request {
   respect_sleep: boolean;
   delivery: "immediate" | "when_available";
   priority: "quiet" | "normal" | "important" | "critical";
+  ios_sound?: string;
+  reminder_interval?: number;
+  reminder_limit?: number;
   cycle_mode: "update" | "new";
   expires_in: number;
   resolve_on_clear: boolean;
@@ -75,6 +78,8 @@ export interface Mobile {
   platform: Device["platform"];
 }
 export interface Delivery {
+  reminder_count?: number;
+  next_reminder_at?: string | null;
   key: string;
   person_id: string;
   channel: string;

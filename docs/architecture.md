@@ -10,6 +10,7 @@ effect on pending notifications.
 | --- | --- |
 | `models.py` | Strict, JSON-compatible configuration and action validation |
 | `routing.py` | Pure decisions from a snapshot of HA states and the home position |
+| `reminders.py` | Pure bounded reminder deadlines and eligibility for scheduling |
 | `manager.py` | Identity, cycles, transactions, subscriptions, expiration and history |
 | `adapters.py` | Companion, generic notify, persistent notifications and TTS |
 | `services.py` | Native actions and response contracts |
@@ -18,8 +19,9 @@ effect on pending notifications.
 | `diagnostics.py` | Allow-listed aggregate diagnostics |
 | `frontend/` | Lit/TypeScript interface and simulated development fixture |
 
-The engine does not implement automation triggers, profiles, reminders or an
-escalation scheduler. It calls existing HA integrations, never vendor APIs.
+The engine supports optional bounded mobile reminders configured per action.
+It does not implement automation triggers, profiles or escalation rules.
+It calls existing HA integrations, never vendor APIs.
 
 ## Identity and transactions
 
@@ -63,7 +65,7 @@ recipients. There is no `proximity` dependency.
 
 Entity state subscriptions re-evaluate pending deliveries. Changes arriving while
 an evaluation is running cause another pass. A periodic maintenance pass handles
-expiration, retention and recovery from missed state notifications. Delivery
+expiration, retention, optional reminders and recovery from missed state notifications. Delivery
 eligibility is checked again immediately before each attempt.
 
 Voice destinations are calculated for the immediate call and never queued for a
@@ -72,7 +74,9 @@ announcement. A voice attempt does not change a person's mobile delivery state.
 
 ## Restart and uncertainty
 
-- Accepted mobile sends are not replayed.
+- Accepted mobile sends are not replayed at startup. Enabled reminders retain
+  their per-destination attempt count and wait at least a full interval after
+  restart, without catching up missed intervals.
 - Mobile sends still waiting for availability resume waiting, then send only when
   eligible.
 - Interrupted sending/updating/clearing operations become `unknown`.
@@ -94,6 +98,11 @@ destination. The handler checks token, cycle, destination identity and the
 registered user where available. A button ID can execute once per cycle, even
 when several devices display it; this prevents duplicated household actions.
 Updating the card rotates tokens but does not reset already claimed button IDs.
+Automatic reminders preserve the existing tokens so the unchanged original card
+can still acknowledge the current cycle. Reminders require a resolution-only
+button; one confirmed acknowledgement resolves the entire cycle. Technical
+receipt and dismissal are not treated as reading. Reminder intent and count are
+persisted before transport, and failed/unknown results are not retried.
 
 Configured actions are validated and run by the HA script engine with the author
 context, not authority taken from a phone's event payload. Interactive authors

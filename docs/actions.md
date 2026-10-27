@@ -54,6 +54,7 @@ executable or local-file URL schemes are rejected.
 | `respect_sleep` | `true` | Require a configured sleep sensor to confirm wakefulness |
 | `delivery` | `immediate` | `immediate` or `when_available` |
 | `priority` | `normal` | `quiet`, `normal`, `important`, or `critical` |
+| `ios_sound` | Empty | Existing `.wav`, `.caf`, or `.aiff` filename on each selected iOS device; see [custom sounds](ios-sounds.md) |
 
 Recipient modes refer only to residents configured in Hano:
 
@@ -94,6 +95,8 @@ heard anything.
 | `cycle_mode` | `update` | `update` or `new` |
 | `expires_in` | `0` | Cycle lifetime in seconds; `0` means no expiration |
 | `resolve_on_clear` | `false` | Resolve globally when a correlated mobile clearing event is received |
+| `reminder_interval` | `0` | Seconds between mobile reminders: `60`–`86400` when enabled |
+| `reminder_limit` | `0` | Maximum additional attempts per mobile destination: `1`–`100` when enabled |
 
 Every logical notification has a distinct cycle ID. Sending an unused ID creates
 a cycle. Sending an active ID with `cycle_mode: update` updates content on already
@@ -111,6 +114,75 @@ Pending sends survive restarts. Completed calls are not repeated merely because
 Home Assistant restarted. An interrupted call whose outcome cannot be established
 is recorded as unknown; immediate voice work interrupted by a restart is not
 replayed. Hano does not retry failed or uncertain sends automatically.
+
+### Optional mobile reminders
+
+Set **both** `reminder_interval` and `reminder_limit` to enable reminders; leave
+both at `0` to keep the default single-send behavior. Expiration is an independent
+upper bound. Reminders require the mobile channel and a **resolution-only button**
+(`resolve: true`, no actions or URI). Give it an explicit label such as **I've seen
+this**. The label is yours; Hano does not add a hidden button or infer reading.
+
+```yaml
+action: hano.send
+data:
+  notification_id: window_check
+  message: Please check the open window.
+  recipient_mode: selected
+  person_entity_ids: [person.example]
+  reminder_interval: 300
+  reminder_limit: 3
+  expires_in: 3600
+  buttons:
+    - id: seen
+      label: I've seen this
+      resolve: true
+      actions: []
+```
+
+One person's acknowledgement resolves the entire cycle, cancels pending sends and
+reminders for everyone, and requests mobile clearing. `hano.resolve`, expiration,
+replacement by a new cycle, and other existing global resolution paths also stop
+reminders. A transport call already in flight may complete before remote clearing.
+Buttons from a replaced cycle cannot acknowledge the new cycle. Buttons from an
+earlier reminder of the same unchanged notification remain valid.
+
+**Reading is not reliably observable.** Companion's
+[received event](https://companion.home-assistant.io/docs/notifications/notification-received/)
+reports technical receipt, not display, reading, opening, or hearing. The documented
+[Android cleared event](https://companion.home-assistant.io/docs/notifications/notification-cleared/)
+reports dismissal and explicitly excludes tapping to open the app. Neither stops
+reminders by itself. The separate `resolve_on_clear` opt-in still resolves globally
+on a correlated dismissal, without treating it as proof of reading. Use an
+[action button](https://companion.home-assistant.io/docs/notifications/actionable-notifications/)
+for explicit acknowledgement on iOS and Android.
+
+Each successful mobile destination gets its own interval starting after its
+initial accepted call. The limit counts additional **attempts**, excluding that
+initial call and explicit automation updates. Previously accepted, technically
+received, or locally dismissed notifications can be reminded. Failed or uncertain
+calls are never retried automatically. A reminder whose outcome fails or is unknown
+consumes one attempt and stops further reminders to that destination.
+
+Before each reminder, Hano rechecks the cycle's original presence/sleep rules and
+captured recipient mapping, including nearest-person selection. A blocked
+destination waits another full interval without spending its budget. A newly
+eligible pending recipient receives its first notification, then its own full
+interval. Direct destinations retain their existing exemption from resident rules.
+Voice and persistent HA cards are not replayed by reminders. The existing mobile
+tag is reused; whether replacement sounds or appears again remains OS-controlled.
+
+The scheduler checks every 30 seconds, so reminders may run later than the requested
+interval. Counts and intent are saved before transport. On restart, previously
+scheduled reminders wait at least one full interval; missed intervals are not
+replayed. Interrupted transport outcomes become unknown and are not retried.
+
+An update keeps each destination's used budget and resets its next interval using
+the new settings; it also performs the usual explicit mobile update. Setting both
+fields to zero cancels scheduling. Re-enabling does not reset used counts. Raising
+the limit explicitly grants more attempts; reducing it can exhaust the budget.
+Only a **new cycle** resets counts. Updates still invalidate prior button tokens.
+The panel shows reminder attempts and the next scheduled check per destination.
 
 Configuration and recipient mapping are captured when a cycle starts. Editing
 people or rooms in the panel affects future cycles. Existing pending work keeps
@@ -300,6 +372,8 @@ the mobile channel are rejected before any send.
 | Display timeout | Rejected | Yes | Rejected |
 | Callback/link buttons | Yes | Up to three | Rejected |
 | Rich priority | OS permission/settings apply | Channel/settings apply | Rejected |
+| Named `ios_sound` | Supported except quiet priority; file must already be imported | Rejected | Rejected |
+| Optional reminders | Bounded, explicit acknowledgement required | Bounded, explicit acknowledgement required | Rejected |
 | Remote clearing | Request supported; OS limits apply | Request supported; OS limits apply | Unsupported |
 | Received/cleared confirmation | Depends on app/OS events | Correlated events when reported | Unsupported |
 

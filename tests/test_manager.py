@@ -195,6 +195,79 @@ async def test_storage_reload_preserves_waiting_without_resending(hass, home):
     await restored.stop()
 
 
+@pytest.mark.parametrize("legacy", [False, True])
+async def test_ios_sound_preview_persistence_and_no_automatic_repetition(
+    hass, home, legacy
+):
+    manager, calls = home
+    config = deepcopy(manager.config)
+    for person in config["persons"]:
+        person["devices"][0]["platform"] = "ios"
+    await manager.save(config, manager.revision)
+    payload = laundry(priority="critical")
+    if not legacy:
+        payload["ios_sound"] = "hano_alarm_25s.wav"
+    before = deepcopy(manager._state())
+    with patch.object(manager._store, "async_save", AsyncMock()) as save:
+        preview = await manager.preview(payload)
+        assert preview["request"]["ios_sound"] == payload.get("ios_sound", "")
+        assert len(preview["destinations"]) == 2
+        save.assert_not_awaited()
+    assert manager._state() == before
+    assert calls == []
+    await manager.send(payload)
+    assert len(calls) == 1
+    expected = {
+        "name": payload.get("ios_sound", "default"),
+        "critical": 1,
+        "volume": 1.0,
+    }
+    assert calls[0][1]["data"]["push"]["sound"] == expected
+    if legacy:
+        # Simulate a real pre-feature record, including a still-pending recipient.
+        manager.notifications["laundry"]["request"].pop("ios_sound")
+        manager.notifications["laundry"]["request"].pop("reminder_interval")
+        manager.notifications["laundry"]["request"].pop("reminder_limit")
+        await manager._store.async_save(manager._state())
+    await manager.stop()
+    restored = HanoManager(hass, manager.entry)
+    await restored.load()
+    try:
+        assert len(calls) == 1
+        assert restored.notifications["laundry"]["request"].get(
+            "ios_sound", ""
+        ) == payload.get("ios_sound", "")
+        hass.states.async_set("binary_sensor.bob_sleep", "off")
+        await hass.async_block_till_done()
+        assert [call[0] for call in calls] == ["mobile_app_alice", "mobile_app_bob"]
+        assert calls[-1][1]["data"]["push"]["sound"] == expected
+        await restored._reevaluate()
+        await restored._reevaluate()
+        assert len(calls) == 2
+        await restored.resolve("laundry")
+        assert all("push" not in call[1]["data"] for call in calls[2:])
+        assert [call[1]["message"] for call in calls[2:]] == ["clear_notification"] * 2
+    finally:
+        await restored.stop()
+
+
+@pytest.mark.parametrize("action", ["preview", "send"])
+async def test_ios_sound_mixed_destinations_rejected_before_any_effect(home, action):
+    manager, calls = home
+    config = deepcopy(manager.config)
+    config["persons"][0]["devices"][0]["platform"] = "ios"
+    await manager.save(config, manager.revision)
+    before = deepcopy(manager._state())
+    with patch.object(manager._store, "async_save", AsyncMock()) as save:
+        with pytest.raises(HanoError, match="require iOS"):
+            await getattr(manager, action)(
+                laundry(priority="critical", ios_sound="hano_alarm_25s.wav")
+            )
+        save.assert_not_awaited()
+    assert calls == []
+    assert manager._state() == before
+
+
 @pytest.mark.parametrize("name,other", [("alice", "bob"), ("bob", "alice")])
 async def test_mixed_platform_mobile_events_match_tag_and_device(home, name, other):
     manager, calls = home

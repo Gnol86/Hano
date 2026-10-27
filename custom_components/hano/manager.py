@@ -32,6 +32,7 @@ from .adapters import (
 from .const import DOMAIN, STORAGE_VERSION, VERSION
 from .errors import HanoError
 from .models import default_config, normalize_config, normalize_request
+from .reminders import next_reminder, reminder_due
 from .routing import route
 from .storage import StrictStore
 
@@ -127,9 +128,19 @@ class HanoManager:
         async with self._mutation():
             for record in self.notifications.values():
                 for delivery in record["deliveries"].values():
+                    # A restart never catches up or immediately replays reminders.
+                    deadline = delivery.get("next_reminder_at")
+                    if deadline:
+                        future = next_reminder(
+                            record["request"], delivery, dt_util.utcnow()
+                        )
+                        delivery["next_reminder_at"] = (
+                            max(deadline, future) if future else None
+                        )
                     if delivery["status"] in {"sending", "updating", "clearing"}:
                         delivery["status"] = "unknown"
                         delivery["reason"] = "interrupted"
+                        delivery["next_reminder_at"] = None
                         self._history(record, "interrupted", delivery["target"])
                     elif (
                         delivery["channel"] == "voice"
@@ -544,6 +555,14 @@ class HanoManager:
                             for delivery in record["deliveries"].values():
                                 if delivery["channel"] == "mobile":
                                     delivery["_tokens"] = {}
+                                    delivery["next_reminder_at"] = (
+                                        next_reminder(
+                                            request, delivery, dt_util.utcnow()
+                                        )
+                                        if delivery["status"]
+                                        in {"accepted", "received", "cleared"}
+                                        else None
+                                    )
                             self._history(record, "updated")
                     else:
                         record = self._build(
@@ -584,7 +603,13 @@ class HanoManager:
         )
 
     async def _dispatch(
-        self, identifier: str, cycle: str, context: Context, refresh: bool = False
+        self,
+        identifier: str,
+        cycle: str,
+        context: Context,
+        refresh: bool = False,
+        *,
+        reminders: bool = False,
     ) -> None:
         lock = self._send_locks.setdefault(identifier, asyncio.Lock())
         async with lock:
@@ -624,6 +649,10 @@ class HanoManager:
                     )
                     break
                 delivery = record["deliveries"][key]
+                if reminders and not reminder_due(
+                    record["request"], delivery, dt_util.utcnow()
+                ):
+                    continue
                 routing_request = record["request"]
                 if record["_nearest_selected"] is not None:
                     routing_request = routing_request | {
@@ -636,7 +665,7 @@ class HanoManager:
                     and delivery["status"] in {"accepted", "received"}
                     and delivery["channel"] != "voice"
                 )
-                if delivery["status"] != "pending" and not updating:
+                if delivery["status"] != "pending" and not updating and not reminders:
                     continue
                 # Refresh existing messages even if their owner went asleep.
                 eligible, reason = (
@@ -647,6 +676,15 @@ class HanoManager:
                 if not eligible:
                     async with self._mutation():
                         delivery = self.notifications[identifier]["deliveries"][key]
+                        if reminders:
+                            # Keep prior status and budget while asleep or away.
+                            delivery["next_reminder_at"] = next_reminder(
+                                record["request"], delivery, dt_util.utcnow()
+                            )
+                            self._history(
+                                record, "reminder_deferred", delivery["target"], reason
+                            )
+                            continue
                         changed = delivery["reason"] != reason
                         delivery["reason"] = reason
                         if (
@@ -666,10 +704,20 @@ class HanoManager:
                 async with self._mutation():
                     record = self.notifications[identifier]
                     delivery = record["deliveries"][key]
-                    delivery["status"] = "updating" if updating else "sending"
+                    delivery["status"] = (
+                        "updating" if updating or reminders else "sending"
+                    )
                     delivery["updated_at"] = now()
                     delivery["_attempted"] = True
-                    if delivery["channel"] == "mobile":
+                    if reminders:
+                        delivery["reminder_count"] = (
+                            delivery.get("reminder_count", 0) + 1
+                        )
+                        delivery["next_reminder_at"] = None
+                        self._history(record, "reminder_attempted", delivery["target"])
+                    if delivery["channel"] == "mobile" and (
+                        not reminders or not delivery["_tokens"]
+                    ):
                         delivery["_tokens"] = {
                             b["id"]: f"HANO_{cycle}_{uuid4().hex}"
                             for b in record["request"]["buttons"]
@@ -679,6 +727,8 @@ class HanoManager:
                 # Save intent before transport; resolution may close the cycle.
                 if self.hass.is_stopping:
                     return
+                if self.notifications[identifier]["status"] != "active":
+                    break
                 outcome, detail = "accepted", ""
                 try:
                     async with asyncio.timeout(30):
@@ -718,6 +768,15 @@ class HanoManager:
                             actual.update(
                                 status=outcome, reason=detail, updated_at=now()
                             )
+                        if actual["channel"] == "mobile":
+                            actual["next_reminder_at"] = (
+                                next_reminder(
+                                    current["request"], actual, dt_util.utcnow()
+                                )
+                                if outcome == "accepted"
+                                and current["status"] == "active"
+                                else None
+                            )
                         self._history(current, outcome, actual["target"], detail)
 
     async def resolve(
@@ -756,6 +815,7 @@ class HanoManager:
             record["resolved_at"] = now()
             cycle = record["cycle_id"]
             for delivery in record["deliveries"].values():
+                delivery["next_reminder_at"] = None
                 if delivery["status"] == "pending":
                     delivery.update(status="cancelled", reason=reason, updated_at=now())
             self._history(record, record["status"], detail=reason)
@@ -859,6 +919,17 @@ class HanoManager:
     async def _maintenance(self, _time) -> None:
         await self._expire_and_purge()
         await self._reevaluate()
+        for record in list(self.notifications.values()):
+            if record["status"] == "active" and any(
+                reminder_due(record["request"], delivery, dt_util.utcnow())
+                for delivery in record["deliveries"].values()
+            ):
+                await self._dispatch(
+                    record["notification_id"],
+                    record["cycle_id"],
+                    Context(),
+                    reminders=True,
+                )
 
     async def _expire_and_purge(self) -> None:
         for record in list(self.notifications.values()):

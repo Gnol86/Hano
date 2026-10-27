@@ -482,6 +482,47 @@ const messages = {
     "Esperar individualmente hasta la disponibilidad",
   ],
   priority: ["Mobile priority", "Priorité mobile", "Prioridad móvil"],
+  reminderInterval: [
+    "Reminder interval (seconds, 0 = off)",
+    "Intervalle des rappels (secondes, 0 = désactivé)",
+    "Intervalo de recordatorios (segundos, 0 = desactivado)",
+  ],
+  reminderLimit: [
+    "Maximum reminders per destination (0 = off)",
+    "Nombre maximal de rappels par destination (0 = désactivé)",
+    "Máximo de recordatorios por destino (0 = desactivado)",
+  ],
+  reminderHelp: [
+    "Leave both at 0 to disable. Otherwise choose 60–86400 seconds and 1–100 reminders, and add an acknowledgement button with Resolve enabled and no actions. One person's acknowledgement stops the cycle for everyone. Reading/opening is not reliably reported. Mobile only; sleep and presence still apply. No voice replay or catch-up after restart. Updates keep the count and restart the interval.",
+    "Laisse les deux à 0 pour désactiver. Sinon, choisis 60–86400 secondes et 1–100 rappels, et ajoute un bouton d’acquittement avec Résoudre activé et aucune action. L’acquittement d’une personne arrête le cycle pour tous. La lecture et l’ouverture ne sont pas signalées de façon fiable. Mobile uniquement ; sommeil et présence restent respectés. Aucun rejeu vocal ni rattrapage au redémarrage. Une mise à jour conserve le compteur et relance l’intervalle.",
+    "Deja ambos a 0 para desactivar. Si no, elige 60–86400 segundos y 1–100 recordatorios, y añade un botón de confirmación con Resolver activado y sin acciones. La confirmación de una persona detiene el ciclo para todos. La lectura y la apertura no se notifican de forma fiable. Solo móvil; se respetan sueño y presencia. Sin repetir voz ni recuperar recordatorios tras reiniciar. Las actualizaciones conservan el contador y reinician el intervalo.",
+  ],
+  reminderCount: [
+    "Reminder attempts",
+    "Tentatives de rappel",
+    "Intentos de recordatorio",
+  ],
+  nextReminder: ["Next reminder", "Prochain rappel", "Próximo recordatorio"],
+  reminder_attempted: [
+    "Reminder attempted",
+    "Rappel tenté",
+    "Recordatorio intentado",
+  ],
+  reminder_deferred: [
+    "Reminder deferred",
+    "Rappel différé",
+    "Recordatorio aplazado",
+  ],
+  iosSound: [
+    "iOS sound filename (optional)",
+    "Nom du fichier sonore iOS (facultatif)",
+    "Nombre del archivo de sonido iOS (opcional)",
+  ],
+  iosSoundHelp: [
+    "Leave empty for the usual sound. The .wav, .caf or .aiff file must already be available in Companion on every selected iPhone and last less than 30 seconds. One playback per notification; leave reminders disabled for a single alert. Requires iOS mobile destinations and a priority other than Quiet.",
+    "Laisse vide pour le son habituel. Le fichier .wav, .caf ou .aiff doit déjà être disponible dans Companion sur chaque iPhone sélectionné et durer moins de 30 secondes. Une lecture par notification ; laisse les rappels désactivés pour une seule alerte. Nécessite des destinations mobiles iOS et une priorité autre que Discrète.",
+    "Déjalo vacío para el sonido habitual. El archivo .wav, .caf o .aiff debe estar disponible en Companion en cada iPhone seleccionado y durar menos de 30 segundos. Una reproducción por notificación; deja los recordatorios desactivados para una sola alerta. Requiere destinos móviles iOS y una prioridad distinta de Discreta.",
+  ],
   quiet: ["Quiet", "Discrète", "Discreta"],
   normal: ["Normal", "Normale", "Normal"],
   important: ["Important", "Importante", "Importante"],

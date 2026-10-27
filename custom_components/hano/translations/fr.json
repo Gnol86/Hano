@@ -79,6 +79,10 @@
           "name": "Priorité",
           "description": "Niveau d’interruption demandé au mobile. Les réglages du système et de l’appareil restent applicables."
         },
+        "ios_sound": {
+          "name": "Nom du fichier sonore iOS (facultatif)",
+          "description": "Nom incluant .wav, .caf ou .aiff. Importe d’abord le son dans Companion sur chaque iPhone sélectionné ; il doit durer moins de 30 secondes. Vide conserve le son habituel. Nécessite le canal mobile et uniquement des destinations iOS ; incompatible avec la priorité discrète. Laisse les rappels désactivés pour une seule alerte."
+        },
         "cycle_mode": {
           "name": "Cycle",
           "description": "Actualiser conserve le suivi et ne répète pas la voix. Nouveau démarre un nouveau cycle."
@@ -130,6 +134,14 @@
         "buttons": {
           "name": "Boutons",
           "description": "Ajouter des boutons libres. Choisir un lien OU des actions HA avec résolution facultative ; un lien ne confirme pas la résolution."
+        },
+        "reminder_interval": {
+          "name": "Intervalle des rappels",
+          "description": "Secondes entre les rappels mobiles (60–86400). Mets intervalle et limite à 0 pour désactiver. Nécessite un bouton d’acquittement qui résout sans action. Lecture et ouverture ne sont pas signalées de façon fiable ; un acquittement résout le cycle pour tous. Sommeil et présence respectés. Aucun rejeu vocal ni rattrapage au redémarrage."
+        },
+        "reminder_limit": {
+          "name": "Nombre maximal de rappels par destination",
+          "description": "1–100 tentatives supplémentaires par destination mobile ; 0 désactive avec un intervalle à 0. Aucun nouvel essai après un échec ou résultat incertain. Une mise à jour conserve les compteurs et relance l’intervalle ; un nouveau cycle les réinitialise. Résolution ou expiration annulent les rappels."
         }
       },
       "sections": {
@@ -213,6 +225,10 @@
           "name": "Priorité",
           "description": "Niveau d’interruption demandé au mobile. Les réglages du système et de l’appareil restent applicables."
         },
+        "ios_sound": {
+          "name": "Nom du fichier sonore iOS (facultatif)",
+          "description": "Nom incluant .wav, .caf ou .aiff. Importe d’abord le son dans Companion sur chaque iPhone sélectionné ; il doit durer moins de 30 secondes. Vide conserve le son habituel. Nécessite le canal mobile et uniquement des destinations iOS ; incompatible avec la priorité discrète. Laisse les rappels désactivés pour une seule alerte."
+        },
         "cycle_mode": {
           "name": "Cycle",
           "description": "Actualiser conserve le suivi et ne répète pas la voix. Nouveau démarre un nouveau cycle."
@@ -264,6 +280,14 @@
         "buttons": {
           "name": "Boutons",
           "description": "Ajouter des boutons libres. Choisir un lien OU des actions HA avec résolution facultative ; un lien ne confirme pas la résolution."
+        },
+        "reminder_interval": {
+          "name": "Intervalle des rappels",
+          "description": "Secondes entre les rappels mobiles (60–86400). Mets intervalle et limite à 0 pour désactiver. Nécessite un bouton d’acquittement qui résout sans action. Lecture et ouverture ne sont pas signalées de façon fiable ; un acquittement résout le cycle pour tous. Sommeil et présence respectés. Aucun rejeu vocal ni rattrapage au redémarrage."
+        },
+        "reminder_limit": {
+          "name": "Nombre maximal de rappels par destination",
+          "description": "1–100 tentatives supplémentaires par destination mobile ; 0 désactive avec un intervalle à 0. Aucun nouvel essai après un échec ou résultat incertain. Une mise à jour conserve les compteurs et relance l’intervalle ; un nouveau cycle les réinitialise. Résolution ou expiration annulent les rappels."
         }
       },
       "sections": {

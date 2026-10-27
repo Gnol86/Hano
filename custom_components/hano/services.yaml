@@ -114,6 +114,10 @@ send:
               multiple: false
               mode: dropdown
           default: normal
+        ios_sound:
+          required: false
+          selector:
+            text: {}
     lifecycle:
       collapsed: true
       fields:
@@ -136,6 +140,25 @@ send:
               mode: box
               unit_of_measurement: s
           default: 0
+        reminder_interval:
+          required: false
+          default: 0
+          selector:
+            number:
+              min: 0
+              max: 86400
+              step: 1
+              mode: box
+              unit_of_measurement: s
+        reminder_limit:
+          required: false
+          default: 0
+          selector:
+            number:
+              min: 0
+              max: 100
+              step: 1
+              mode: box
         resolve_on_clear:
           required: false
           selector:
@@ -348,6 +371,10 @@ preview:
               multiple: false
               mode: dropdown
           default: normal
+        ios_sound:
+          required: false
+          selector:
+            text: {}
     lifecycle:
       collapsed: true
       fields:
@@ -370,6 +397,25 @@ preview:
               mode: box
               unit_of_measurement: s
           default: 0
+        reminder_interval:
+          required: false
+          default: 0
+          selector:
+            number:
+              min: 0
+              max: 86400
+              step: 1
+              mode: box
+              unit_of_measurement: s
+        reminder_limit:
+          required: false
+          default: 0
+          selector:
+            number:
+              min: 0
+              max: 100
+              step: 1
+              mode: box
         resolve_on_clear:
           required: false
           selector:

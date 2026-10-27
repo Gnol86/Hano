@@ -97,6 +97,8 @@ def validate_endpoint(hass: HomeAssistant, endpoint: dict, request: dict) -> Non
         platform = endpoint["platform"]
         if platform not in {"ios", "android"}:
             raise HanoError("unsupported_options", "Select the Companion platform")
+        if platform != "ios" and request.get("ios_sound"):
+            raise HanoError("unsupported_options", "Custom iOS sounds require iOS")
         if platform == "ios" and request["timeout"]:
             raise HanoError(
                 "unsupported_options", "Notification timeout requires Android"
@@ -128,6 +130,7 @@ def validate_endpoint(hass: HomeAssistant, endpoint: dict, request: dict) -> Non
         or request["icon"]
         or request["color"]
         or request["timeout"]
+        or request.get("ios_sound")
         or request["priority"] != "normal"
         or request["resolve_on_clear"]
     )
@@ -175,7 +178,13 @@ def mobile_payload(
         }
         data["push"] = {"interruption-level": levels[priority]}
         if priority == "critical":
-            data["push"]["sound"] = {"name": "default", "critical": 1, "volume": 1.0}
+            data["push"]["sound"] = {
+                "name": request.get("ios_sound") or "default",
+                "critical": 1,
+                "volume": 1.0,
+            }
+        elif priority != "quiet" and request.get("ios_sound"):
+            data["push"]["sound"] = request["ios_sound"]
     elif priority in ("important", "critical"):
         data.update(ttl=0, priority="high")
         if priority == "critical":

@@ -71,6 +71,25 @@ async def test_preview_requires_response_and_never_sends(hass, hano_entry):
         send.assert_not_awaited()
 
 
+@pytest.mark.parametrize("action", ["send", "preview"])
+async def test_native_actions_preserve_custom_ios_sound(hass, hano_entry, action):
+    with patch.object(
+        hano_entry.runtime_data, action, AsyncMock(return_value={})
+    ) as handler:
+        await hass.services.async_call(
+            "hano",
+            action,
+            {
+                "message": "Test",
+                "priority": "critical",
+                "ios_sound": "hano_alarm_25s.wav",
+            },
+            blocking=True,
+            return_response=True,
+        )
+        assert handler.call_args.args[0]["ios_sound"] == "hano_alarm_25s.wav"
+
+
 async def test_read_only_user_cannot_send_preview_or_resolve(
     hass, hano_entry, hass_read_only_user
 ):
@@ -125,6 +144,11 @@ async def test_native_descriptions_expose_structured_buttons(hass, hano_entry):
     descriptions = (await async_get_all_descriptions(hass))["hano"]
     for action in ("send", "preview"):
         fields = descriptions[action]["fields"]
+        assert "text" in fields["availability"]["fields"]["ios_sound"]["selector"]
+        assert (
+            fields["lifecycle"]["fields"]["reminder_limit"]["selector"]["number"]["max"]
+            == 100
+        )
         assert fields["content"]["fields"]["message"]["required"]
         button = fields["buttons"]["selector"]["object"]
         assert button["multiple"] is True

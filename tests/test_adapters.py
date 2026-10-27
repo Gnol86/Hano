@@ -39,6 +39,40 @@ def test_ios_priorities(priority, level):
     assert ("sound" in data["push"]) is (priority == "critical")
 
 
+@pytest.mark.parametrize("priority", ["normal", "important", "critical"])
+def test_ios_custom_sound_payload(priority):
+    sound = "hano_alarm_25s.wav"
+    data = mobile_payload(
+        request(priority=priority, ios_sound=sound), "tag", {}, "ios"
+    )["data"]
+    assert data == {
+        "tag": "tag",
+        "push": {
+            "interruption-level": {
+                "normal": "active",
+                "important": "time-sensitive",
+                "critical": "critical",
+            }[priority],
+            "sound": {"name": sound, "critical": 1, "volume": 1.0}
+            if priority == "critical"
+            else sound,
+        },
+    }
+
+
+@pytest.mark.parametrize("priority", ["quiet", "normal", "important", "critical"])
+@pytest.mark.parametrize("legacy", [False, True])
+def test_ios_empty_or_missing_sound_preserves_existing_payload(priority, legacy):
+    payload = request(priority=priority)
+    if legacy:
+        payload.pop("ios_sound")
+    push = mobile_payload(payload, "tag", {}, "ios")["data"]["push"]
+    if priority == "critical":
+        assert push["sound"] == {"name": "default", "critical": 1, "volume": 1.0}
+    else:
+        assert "sound" not in push
+
+
 @pytest.mark.parametrize("tag", ["x" * 65, "é" * 33, "hano_entry_" + "a" * 80])
 def test_ios_tag_meets_apns_byte_limit_and_preserves_cycle_identity(tag):
     value = mobile_payload(request(), tag, {}, "ios")["data"]["tag"]
@@ -84,6 +118,7 @@ def test_android_critical_and_button_tokens():
         {"priority": "critical"},
         {"buttons": [{"id": "x", "label": "X"}]},
         {"resolve_on_clear": True},
+        {"ios_sound": "hano_alarm_25s.wav"},
     ],
 )
 async def test_generic_adapter_rejects_unsupported_options(hass, options):
@@ -113,6 +148,7 @@ async def test_generic_title_is_feature_checked_and_clear_is_unsupported(hass):
             {"camera_entity_id": "camera.entry", "image_url": "/local/image.jpg"},
         ),
         ("generic", {}),
+        ("android", {"ios_sound": "hano_alarm_25s.wav"}),
     ],
 )
 async def test_mobile_platform_limitations_fail_preflight(hass, platform, options):

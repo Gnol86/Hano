@@ -79,6 +79,10 @@
           "name": "Priority",
           "description": "Requested mobile interruption level. Device and operating system settings still apply."
         },
+        "ios_sound": {
+          "name": "iOS sound filename (optional)",
+          "description": "Filename including .wav, .caf or .aiff. Import the sound into Companion on every selected iPhone first; it must last less than 30 seconds. Empty keeps the usual sound. Requires the mobile channel and only iOS destinations; incompatible with quiet priority. Leave reminders disabled for a single alert."
+        },
         "cycle_mode": {
           "name": "Cycle",
           "description": "Update preserves delivery tracking and does not repeat voice. New starts a new cycle."
@@ -130,6 +134,14 @@
         "buttons": {
           "name": "Buttons",
           "description": "Add freely named buttons. Use a link OR HA actions and optional resolution; links cannot confirm resolution."
+        },
+        "reminder_interval": {
+          "name": "Reminder interval",
+          "description": "Seconds between mobile reminders (60–86400). Set interval and limit to 0 to disable. Requires a resolution-only acknowledgement button. Reading or opening is not reliably reported; one acknowledgement resolves the cycle for everyone. Sleep and presence apply. No voice replay or catch-up after restart."
+        },
+        "reminder_limit": {
+          "name": "Maximum reminders per destination",
+          "description": "1–100 additional attempts per mobile destination; 0 disables reminders with interval 0. Failed or uncertain sends are not retried. Updates preserve counts and restart the interval; a new cycle resets counts. Resolution or expiration cancels reminders."
         }
       },
       "sections": {
@@ -213,6 +225,10 @@
           "name": "Priority",
           "description": "Requested mobile interruption level. Device and operating system settings still apply."
         },
+        "ios_sound": {
+          "name": "iOS sound filename (optional)",
+          "description": "Filename including .wav, .caf or .aiff. Import the sound into Companion on every selected iPhone first; it must last less than 30 seconds. Empty keeps the usual sound. Requires the mobile channel and only iOS destinations; incompatible with quiet priority. Leave reminders disabled for a single alert."
+        },
         "cycle_mode": {
           "name": "Cycle",
           "description": "Update preserves delivery tracking and does not repeat voice. New starts a new cycle."
@@ -264,6 +280,14 @@
         "buttons": {
           "name": "Buttons",
           "description": "Add freely named buttons. Use a link OR HA actions and optional resolution; links cannot confirm resolution."
+        },
+        "reminder_interval": {
+          "name": "Reminder interval",
+          "description": "Seconds between mobile reminders (60–86400). Set interval and limit to 0 to disable. Requires a resolution-only acknowledgement button. Reading or opening is not reliably reported; one acknowledgement resolves the cycle for everyone. Sleep and presence apply. No voice replay or catch-up after restart."
+        },
+        "reminder_limit": {
+          "name": "Maximum reminders per destination",
+          "description": "1–100 additional attempts per mobile destination; 0 disables reminders with interval 0. Failed or uncertain sends are not retried. Updates preserve counts and restart the interval; a new cycle resets counts. Resolution or expiration cancels reminders."
         }
       },
       "sections": {

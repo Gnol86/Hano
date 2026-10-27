@@ -13,6 +13,46 @@ from custom_components.hano.models import (
 )
 
 
+@pytest.mark.parametrize("sound", ["", "hano_alarm_25s.wav", "Bell.caf", "Bell.AIFF"])
+def test_ios_sound_accepts_optional_filename(sound):
+    assert (
+        normalize_request({"message": "Test", "ios_sound": sound})["ios_sound"] == sound
+    )
+    assert normalize_request({"message": "Test"})["ios_sound"] == ""
+
+
+@pytest.mark.parametrize(
+    "sound",
+    [
+        None,
+        25,
+        "default",
+        "alarm.mp3",
+        "../alarm.wav",
+        "https://host/alarm.wav",
+        "folder\\alarm.caf",
+        "alarm:\\sound.aiff",
+        " alarm.wav",
+        "alarm.wav ",
+        "alarm\n.wav",
+        "alarm\x00.wav",
+        "alarm\x7f.wav",
+    ],
+)
+def test_ios_sound_rejects_invalid_names(sound):
+    with pytest.raises(HanoError, match="ios_sound"):
+        normalize_request({"message": "Test", "ios_sound": sound})
+
+
+@pytest.mark.parametrize(
+    "options",
+    [{"priority": "quiet"}, {"channels": ["persistent"]}, {"channels": ["voice"]}],
+)
+def test_ios_sound_rejects_silent_or_nonmobile_requests(options):
+    with pytest.raises(HanoError, match="ios_sound"):
+        normalize_request({"message": "Test", "ios_sound": "alarm.wav", **options})
+
+
 def test_defaults_are_independent_and_requests_preserve_caller():
     first, second = default_config(), default_config()
     first["persons"].append({"person_id": "person.alice"})
@@ -24,6 +64,7 @@ def test_defaults_are_independent_and_requests_preserve_caller():
     }
     before = deepcopy(raw)
     normalized = normalize_request(raw)
+    assert normalized["reminder_interval"] == normalized["reminder_limit"] == 0
     normalized["buttons"][0]["label"] = "Changed"
     assert raw == before
     assert normalized["respect_sleep"] is True

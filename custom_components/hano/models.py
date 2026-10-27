@@ -282,6 +282,9 @@ def normalize_request(value: Any) -> dict[str, Any]:
         "respect_sleep": True,
         "delivery": "immediate",
         "priority": "normal",
+        "ios_sound": "",
+        "reminder_interval": 0,
+        "reminder_limit": 0,
         "cycle_mode": "update",
         "expires_in": 0,
         "resolve_on_clear": False,
@@ -308,6 +311,7 @@ def normalize_request(value: Any) -> dict[str, Any]:
         "color",
         "tts_language",
         "voice_message",
+        "ios_sound",
     ):
         _text(result[field], code, field, required=field == "message")
     choices = {
@@ -319,6 +323,17 @@ def normalize_request(value: Any) -> dict[str, Any]:
     }
     for field, allowed in choices.items():
         _choice(result[field], allowed, code, field)
+    sound = result["ios_sound"]
+    if sound:
+        if (
+            sound != sound.strip()
+            or any(char in sound for char in "/\\:")
+            or any(ord(char) < 32 or ord(char) == 127 for char in sound)
+            or not sound.lower().endswith((".wav", ".caf", ".aiff"))
+        ):
+            _fail(code, "ios_sound", "use a .wav, .caf or .aiff filename, not a URL")
+        if result["priority"] == "quiet":
+            _fail(code, "ios_sound", "a quiet notification cannot request a sound")
     channels = _list(result["channels"], code, "channels")
     if not channels:
         _fail(code, "channels", "select at least one channel")
@@ -328,6 +343,8 @@ def normalize_request(value: Any) -> dict[str, Any]:
             for channel in channels
         )
     )
+    if sound and "mobile" not in result["channels"]:
+        _fail(code, "ios_sound", "requires the mobile channel")
     for field, domain in (
         ("person_entity_ids", "person"),
         ("notify_entity_ids", "notify"),
@@ -344,6 +361,17 @@ def normalize_request(value: Any) -> dict[str, Any]:
         _boolean(result[field], code, field)
     for field in ("expires_in", "timeout"):
         result[field] = _number(result[field], code, field)
+    for field, maximum in (("reminder_interval", 86400), ("reminder_limit", 100)):
+        result[field] = _number(
+            result[field], code, field, maximum=maximum, integer=True
+        )
+    if bool(result["reminder_interval"]) != bool(result["reminder_limit"]):
+        _fail(code, "reminder_interval", "set both interval and limit, or both to zero")
+    if result["reminder_interval"]:
+        if result["reminder_interval"] < 60:
+            _fail(code, "reminder_interval", "must be at least 60 seconds")
+        if "mobile" not in result["channels"]:
+            _fail(code, "reminder_interval", "requires the mobile channel")
     if result["volume"] is not None:
         result["volume"] = _number(result["volume"], code, "volume", maximum=100)
     for field, domain in (("camera_entity_id", "camera"), ("tts_entity_id", "tts")):
@@ -377,4 +405,12 @@ def normalize_request(value: Any) -> dict[str, Any]:
             _fail(code, field, "a URI cannot combine actions or automatic resolution")
         buttons.append(button)
     result["buttons"] = buttons
+    if result["reminder_interval"] and not any(
+        button["resolve"] and not button["actions"] for button in buttons
+    ):
+        _fail(
+            code,
+            "buttons",
+            "reminders require a resolution-only acknowledgement button",
+        )
     return result
