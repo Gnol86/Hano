@@ -313,7 +313,7 @@
     },
     "resolve": {
       "name": "Resolve a notification",
-      "description": "Close the active cycle, cancel pending deliveries and request clearing everywhere.",
+      "description": "Close the active cycle, cancel pending deliveries and request clearing everywhere. An absent or already closed notification is left unchanged.",
       "fields": {
         "notification_id": {
           "name": "Notification identifier",

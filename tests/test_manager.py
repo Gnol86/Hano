@@ -63,6 +63,109 @@ def laundry(**overrides):
     }
 
 
+@pytest.mark.parametrize("purged", [False, True])
+@pytest.mark.parametrize("expected_cycle", [None, "old-cycle"])
+async def test_resolve_absent_is_side_effect_free(home, purged, expected_cycle):
+    manager, calls = home
+    if purged:
+        await manager.send(laundry())
+        await manager.resolve("laundry")
+        await manager.purge_history()
+    await manager.send(laundry(notification_id="other"))
+    before = deepcopy(manager._state())
+    prior_calls = deepcopy(calls)
+    with (
+        patch.object(manager._store, "async_save") as save,
+        patch.object(manager, "notify") as notify,
+        patch.object(manager._adapters, "dismiss_persistent") as dismiss,
+    ):
+        for _ in range(2):
+            assert await manager.resolve("laundry", expected_cycle=expected_cycle) == {
+                "notification_id": "laundry",
+                "cycle_id": None,
+                "status": "not_found",
+                "changed": False,
+            }
+        save.assert_not_awaited()
+        notify.assert_not_called()
+        dismiss.assert_not_called()
+    assert manager._state() == before
+    assert calls == prior_calls
+
+
+@pytest.mark.parametrize("reason", ["manual", "expired"])
+async def test_resolve_active_then_closed_preserves_other_notifications(
+    hass, home, reason
+):
+    manager, calls = home
+    first = await manager.send(laundry(channels=["mobile", "persistent"]))
+    await manager.send(laundry(notification_id="other"))
+    other = deepcopy(manager.notifications["other"])
+    tag = manager.notifications["laundry"]["_tag"]
+    await hass.async_block_till_done()
+    assert tag in hass.data[persistent_notification.DOMAIN]
+
+    result = await manager.resolve("laundry", reason=reason)
+    await hass.async_block_till_done()
+    assert result["status"] == ("expired" if reason == "expired" else "resolved")
+    assert result["cycle_id"] == first["cycle_id"]
+    mobile = [d for d in result["deliveries"] if d["channel"] == "mobile"]
+    assert [d["status"] for d in mobile] == ["clear_requested", "cancelled"]
+    assert tag not in hass.data[persistent_notification.DOMAIN]
+    assert manager.notifications["other"] == other
+    prior_calls = deepcopy(calls)
+    with (
+        patch.object(manager._store, "async_save") as save,
+        patch.object(manager, "notify") as notify,
+        patch.object(manager._adapters, "dismiss_persistent") as dismiss,
+    ):
+        assert await manager.resolve("laundry") == result
+        save.assert_not_awaited()
+        notify.assert_not_called()
+        dismiss.assert_not_called()
+    assert calls == prior_calls
+    assert manager.notifications["other"] == other
+
+
+@pytest.mark.parametrize("exists", [False, True])
+@pytest.mark.parametrize("user_kind", ["read_only", "unknown"])
+async def test_resolve_checks_authority_before_lookup(
+    home, hass_read_only_user, exists, user_kind
+):
+    manager, calls = home
+    if exists:
+        await manager.send(laundry())
+    before = deepcopy(manager._state())
+    prior_calls = deepcopy(calls)
+    user_id = hass_read_only_user.id if user_kind == "read_only" else "deleted-user"
+    with pytest.raises(HanoError) as error:
+        await manager.resolve("laundry", context=Context(user_id=user_id))
+    assert error.value.code == "unauthorized"
+    assert manager._state() == before
+    assert calls == prior_calls
+
+
+async def test_storage_failure_during_resolution_preserves_active_cycle(home):
+    manager, calls = home
+    await manager.send(laundry())
+    before = deepcopy(manager._state())
+    prior_calls = deepcopy(calls)
+    with (
+        patch.object(
+            manager._store,
+            "async_save",
+            side_effect=HanoError("storage_error", "disk full"),
+        ),
+        patch.object(manager._adapters, "dismiss_persistent") as dismiss,
+    ):
+        with pytest.raises(HanoError) as error:
+            await manager.resolve("laundry")
+        assert error.value.code == "storage_error"
+        dismiss.assert_not_called()
+    assert manager._state() == before
+    assert calls == prior_calls
+
+
 @pytest.mark.parametrize("resolved", [False, True])
 async def test_laundry_wake_sends_only_pending_or_nothing_after_resolution(
     hass, home, resolved

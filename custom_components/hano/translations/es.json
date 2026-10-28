@@ -313,7 +313,7 @@
     },
     "resolve": {
       "name": "Resolver una notificación",
-      "description": "Cerrar el ciclo activo, cancelar entregas pendientes y solicitar el borrado en todos los destinos.",
+      "description": "Cerrar el ciclo activo, cancelar entregas pendientes y solicitar el borrado en todos los destinos. Una notificación inexistente o ya cerrada permanece sin cambios.",
       "fields": {
         "notification_id": {
           "name": "Identificador de notificación",

@@ -313,7 +313,7 @@
     },
     "resolve": {
       "name": "Résoudre une notification",
-      "description": "Fermer le cycle actif, annuler les attentes et demander l’effacement partout.",
+      "description": "Fermer le cycle actif, annuler les attentes et demander l’effacement partout. Une notification absente ou déjà clôturée reste inchangée.",
       "fields": {
         "notification_id": {
           "name": "Identifiant de notification",

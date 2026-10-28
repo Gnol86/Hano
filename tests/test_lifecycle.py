@@ -179,6 +179,50 @@ async def test_delayed_persistent_removal_cannot_resolve_new_cycle(
     assert manager.notifications["washer"]["status"] == "active"
 
 
+async def test_absent_resolution_and_old_callback_cannot_close_future_cycle(
+    lifecycle_manager,
+):
+    manager = lifecycle_manager
+    first = await manager.send(
+        request(buttons=[{"id": "done", "label": "Done", "resolve": True}])
+    )
+    delivery = next(iter(manager.notifications["washer"]["deliveries"].values()))
+    token = delivery["_tokens"]["done"]
+    await manager.resolve("washer")
+    await manager.purge_history()
+    missing = await manager.resolve("washer", expected_cycle=first["cycle_id"])
+    assert missing["status"] == "not_found"
+
+    second = await manager.send(request())
+    before = deepcopy(manager._state())
+    stale = await manager.resolve("washer", expected_cycle=first["cycle_id"])
+    assert stale == {
+        "notification_id": "washer",
+        "cycle_id": first["cycle_id"],
+        "status": "stale",
+    }
+    await manager._handle_button(action_event(token))
+    assert manager._state() == before
+    assert second["cycle_id"] != first["cycle_id"]
+    assert manager.notifications["washer"]["status"] == "active"
+    assert manager._adapters.clear.await_count == 1
+
+
+async def test_resolve_waits_for_concurrent_cycle_creation(lifecycle_manager):
+    manager = lifecycle_manager
+    transition = manager._transition_locks.setdefault("washer", asyncio.Lock())
+    async with transition:
+        sending = asyncio.create_task(manager.send(request()))
+        await asyncio.sleep(0)
+        resolving = asyncio.create_task(manager.resolve("washer"))
+        await asyncio.sleep(0)
+        assert not resolving.done()
+    sent, resolved = await asyncio.gather(sending, resolving)
+    assert resolved["cycle_id"] == sent["cycle_id"]
+    assert resolved["status"] == "resolved"
+    assert manager.notifications["washer"]["status"] == "resolved"
+
+
 async def test_same_cycle_update_invalidates_token_waiting_for_mutation_lock(
     lifecycle_manager,
 ):

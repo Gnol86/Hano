@@ -1,13 +1,16 @@
 """Native service contracts, permissions and graphical action descriptions."""
 
+from copy import deepcopy
 from unittest.mock import AsyncMock, patch
 
 import probatio
 import pytest
+from homeassistant.auth.const import GROUP_ID_ADMIN
 from homeassistant.core import Context, SupportsResponse
 from homeassistant.exceptions import ServiceValidationError, Unauthorized
 from homeassistant.helpers.service import async_get_all_descriptions
 from homeassistant.setup import async_setup_component
+from pytest_homeassistant_custom_component.common import MockUser
 
 from custom_components.hano.errors import HanoError
 
@@ -49,6 +52,87 @@ async def test_optional_responses_and_context_are_forwarded(hass, hano_entry):
                 "hano", "send", {"message": "Finished"}, blocking=True
             )
             is None
+        )
+
+
+@pytest.mark.parametrize("manual", [False, True])
+@pytest.mark.parametrize("return_response", [False, True])
+async def test_resolve_absent_native_action(hass, hano_entry, manual, return_response):
+    context = Context()
+    if manual:
+        group = await hass.auth.async_get_group(GROUP_ID_ADMIN)
+        user = MockUser(groups=[group]).add_to_hass(hass)
+        context = Context(user_id=user.id)
+    manager = hano_entry.runtime_data
+    before = deepcopy(manager._state())
+    result = await hass.services.async_call(
+        "hano",
+        "resolve",
+        {"notification_id": "laundry"},
+        blocking=True,
+        return_response=return_response,
+        context=context,
+    )
+    assert result == (
+        {
+            "notification_id": "laundry",
+            "cycle_id": None,
+            "status": "not_found",
+            "changed": False,
+        }
+        if return_response
+        else None
+    )
+    assert manager._state() == before
+
+
+async def test_resolve_missing_then_active_then_closed_native_action(hass, hano_entry):
+    manager = hano_entry.runtime_data
+    first = await manager.send(
+        {"notification_id": "dryer", "message": "Ready", "channels": ["persistent"]}
+    )
+    results = []
+    for identifier in ("washer", "dryer", "dryer"):
+        results.append(
+            await hass.services.async_call(
+                "hano",
+                "resolve",
+                {"notification_id": identifier},
+                blocking=True,
+                return_response=True,
+            )
+        )
+    assert results[0]["status"] == "not_found"
+    assert results[1]["status"] == "resolved"
+    assert results[1]["cycle_id"] == first["cycle_id"]
+    assert results[2] == results[1]
+    assert set(manager.notifications) == {"dryer"}
+
+
+async def test_resolve_requires_loaded_integration(hass):
+    assert await async_setup_component(hass, "hano", {})
+    with pytest.raises(ServiceValidationError) as error:
+        await hass.services.async_call(
+            "hano", "resolve", {"notification_id": "absent"}, blocking=True
+        )
+    assert error.value.translation_placeholders["code"] == "not_loaded"
+
+
+@pytest.mark.parametrize("user_kind", ["unknown", "inactive_admin"])
+async def test_resolve_absent_rejects_unauthorized_users(hass, hano_entry, user_kind):
+    user_id = "deleted-user"
+    if user_kind == "inactive_admin":
+        group = await hass.auth.async_get_group(GROUP_ID_ADMIN)
+        user = MockUser(groups=[group]).add_to_hass(hass)
+        user.is_active = False
+        user_id = user.id
+    with pytest.raises(Unauthorized):
+        await hass.services.async_call(
+            "hano",
+            "resolve",
+            {"notification_id": "absent"},
+            blocking=True,
+            context=Context(user_id=user_id),
         )
 
 

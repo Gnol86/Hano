@@ -8,7 +8,7 @@ French and Spanish translations include the action forms and panel.
 | --- | --- | --- |
 | `hano.send` | Create, update, or start a new notification cycle | Optional notification record |
 | `hano.preview` | Validate and calculate routing without sending or storing a cycle | Required response data |
-| `hano.resolve` | Close an active notification and cancel its pending sends | Optional notification record |
+| `hano.resolve` | Close an active notification and cancel its pending sends | Optional notification record or no-op result |
 
 Interactive calls require an administrator. Ordinary Home Assistant automation
 contexts are supported. A preview performs the same target and option validation
@@ -276,8 +276,26 @@ data:
   notification_id: laundry_finished
 ```
 
-Resolution is idempotent for an existing resolved cycle. It records the closed
-state, cancels pending recipients, dismisses Hano's persistent notification, and
+Resolution is idempotent. If the identifier has never been sent or its history has
+been purged, the action succeeds without creating a notification or cycle,
+writing state, or calling any notification adapter. When response data is
+requested, it returns:
+
+```yaml
+notification_id: laundry_finished
+cycle_id: null
+status: not_found
+changed: false
+```
+
+An existing resolved or expired cycle returns its public record unchanged, with
+no repeated clearing. This lets an automation resolve several known identifiers
+even before their first send or after history cleanup, without helpers or
+`continue_on_error`. Administrator permissions still apply, and an integration
+that is not loaded still raises an error.
+
+For an active cycle, resolution records the closed state, cancels pending
+recipients, dismisses Hano's persistent notification, and
 requests clearing on attempted Companion destinations. It waits for any in-flight
 send before issuing remote clearing, preventing a late send from escaping the
 clearing request. Removing a Hano persistent notification in Home Assistant also
@@ -309,8 +327,11 @@ To retain a generated identifier in a script, request a response:
 ```
 
 `send` and `resolve` return a public notification record when response data is
-requested: logical ID, cycle ID, lifecycle status, content, timestamps, request,
-destination outcomes, and history. Private callback tokens are excluded.
+requested and a cycle exists: logical ID, cycle ID, lifecycle status, content,
+timestamps, request, destination outcomes, and history. Private callback tokens
+are excluded. For an absent identifier, `resolve` returns only the four-field
+no-op result documented above; `not_found` is a response status, not a persisted
+cycle status. Existing notification records retain their response shape.
 `preview` requires response data and returns:
 
 - `preview: true` and the normalized `request`;

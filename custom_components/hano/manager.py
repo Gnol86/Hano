@@ -104,11 +104,13 @@ class HanoManager:
         }
 
     @asynccontextmanager
-    async def _mutation(self):
+    async def _mutation(self, *, skip_unchanged: bool = False):
         async with self._lock:
             previous = deepcopy(self._state())
             try:
                 yield
+                if skip_unchanged and self._state() == previous:
+                    return
                 await self._store.async_save(self._state())
             except BaseException:
                 self.config = previous["config"]
@@ -799,10 +801,15 @@ class HanoManager:
         reason: str,
         expected_cycle: str | None = None,
     ) -> dict:
-        async with self._mutation():
+        async with self._mutation(skip_unchanged=True):
             record = self.notifications.get(notification_id)
             if record is None:
-                raise HanoError("not_found", "Unknown notification identifier")
+                return {
+                    "notification_id": notification_id,
+                    "cycle_id": None,
+                    "status": "not_found",
+                    "changed": False,
+                }
             if expected_cycle and record["cycle_id"] != expected_cycle:
                 return {
                     "notification_id": notification_id,
