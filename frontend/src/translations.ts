@@ -1,4 +1,15 @@
 const messages = {
+  dashboard: ["Dashboard", "Tableau de bord", "Panel de control"],
+  activeNotificationsSensor: [
+    "Enable the active notifications sensor",
+    "Activer le capteur des notifications actives",
+    "Activar el sensor de notificaciones activas",
+  ],
+  activeNotificationsSensorHelp: [
+    "After saving, the sensor counts all active notifications, including those waiting to be sent. Its notifications attribute shares their content with every user who can read the sensor, regardless of recipients. Disabling it makes the sensor unavailable and clears the list without resolving notifications.",
+    "Après enregistrement, le capteur compte toutes les notifications actives, y compris celles en attente d’envoi. Son attribut notifications partage leur contenu avec tous les utilisateurs pouvant lire le capteur, quels que soient les destinataires. Le désactiver rend le capteur indisponible et vide la liste sans résoudre les notifications.",
+    "Tras guardar, el sensor cuenta todas las notificaciones activas, incluidas las pendientes de envío. Su atributo notifications comparte su contenido con cualquier usuario que pueda leer el sensor, independientemente de los destinatarios. Al desactivarlo, el sensor deja de estar disponible y la lista se vacía sin resolver las notificaciones.",
+  ],
   voice_no_longer_eligible: [
     "The speaker is no longer eligible for this announcement.",
     "L’enceinte n’est plus disponible pour cette annonce selon les règles de routage.",

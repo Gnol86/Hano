@@ -7,6 +7,7 @@ export const emptyConfig = (): Config => ({
   tts_language: "",
   history_days: 30,
   native_volume_entity_ids: [],
+  active_notifications_sensor_enabled: false,
 });
 export const emptyRequest = (): Request => ({
   notification_id: "",

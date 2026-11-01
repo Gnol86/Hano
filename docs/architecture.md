@@ -117,6 +117,22 @@ execution callback and cannot request resolution after opening the link.
 
 ## Privacy and maintenance
 
+The optional active-notifications sensor is an explicit global export of current
+display content. It is disabled by default in Hano settings and remains
+`unavailable` with an empty list until enabled. The persisted setting takes effect
+live and applies to all current cycles, independently of the configuration frozen
+when each cycle was created.
+
+The sensor caches an allow-listed projection of the manager's persisted-change
+snapshots. It does not poll, send, resolve or infer delivery. It counts cycles,
+filters terminal records and publishes content changes even when the count stays
+the same. Platform setup/unload owns the subscription; the stable registry unique
+ID preserves entity renames across reloads. The list is not recorded by Recorder
+and does not opt into long-term statistics. Ordinary entity read permissions apply
+to this export, so enabled content is not restricted to notification recipients or
+administrators. Button actions, delivery destinations, history and internal tokens
+remain outside the sensor.
+
 Panel commands, live snapshots and full history require administrator access.
 The static JavaScript bundle contains no installation data. Diagnostics return
 aggregate counts only, excluding messages, actions, identifiers and positions.

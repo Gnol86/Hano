@@ -1,5 +1,10 @@
 {
   "title": "Hano",
+  "entity": {
+    "sensor": {
+      "active_notifications": { "name": "Hano notifications actives" }
+    }
+  },
   "config": {
     "step": {
       "user": {

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { afterEach, test } from "node:test";
 import { Window } from "happy-dom";
 import { emptyConfig, emptyRequest } from "../src/model";
+import { translate } from "../src/translations";
 import type { Hass, Snapshot, Request } from "../src/types";
 const window = new Window({ url: "http://localhost:8123" });
 for (const key of [
@@ -210,6 +211,60 @@ function select(panel: Panel, key: string, value: string) {
   return element;
 }
 afterEach(() => document.body.replaceChildren());
+for (const locale of ["en", "fr", "es"]) {
+  test(`notification sensor setting saves and discards in ${locale}`, async () => {
+    const { panel, calls, snapshot } = await mount({ locale });
+    click(panel, translate("settings", locale));
+    await settle(panel);
+    const checkbox = () => {
+      const element = panel.shadowRoot!.querySelector<HTMLInputElement>(
+        '[data-field="activeNotificationsSensor"]',
+      );
+      assert.ok(element);
+      return element;
+    };
+    assert.equal(checkbox().checked, false);
+    assert.ok(
+      panel.shadowRoot!.textContent!.includes(
+        translate("activeNotificationsSensor", locale),
+      ),
+    );
+    assert.ok(
+      panel.shadowRoot!.textContent!.includes(
+        translate("activeNotificationsSensorHelp", locale),
+      ),
+    );
+    checkbox().click();
+    await settle(panel);
+    assert.equal(calls.length, 0);
+    assert.equal(snapshot().config.active_notifications_sensor_enabled, false);
+    click(panel, translate("discard", locale));
+    await settle(panel);
+    assert.equal(checkbox().checked, false);
+    checkbox().click();
+    await settle(panel);
+    click(panel, translate("save", locale));
+    await settle(panel);
+    assert.equal(calls[0].type, "hano/save");
+    assert.equal(
+      (calls[0].config as Snapshot["config"])
+        .active_notifications_sensor_enabled,
+      true,
+    );
+    assert.equal(snapshot().config.active_notifications_sensor_enabled, true);
+    assert.equal(panel.shadowRoot!.querySelector(".savebar"), null);
+    click(panel, translate("notifications", locale));
+    await settle(panel);
+    click(panel, translate("settings", locale));
+    await settle(panel);
+    assert.equal(checkbox().checked, true);
+    checkbox().click();
+    await settle(panel);
+    click(panel, translate("save", locale));
+    await settle(panel);
+    assert.equal(snapshot().config.active_notifications_sensor_enabled, false);
+  });
+}
 test("subscribes once and renders translated status detail", async () => {
   const { panel, counts } = await mount();
   assert.equal(counts().subscriptions, 1);

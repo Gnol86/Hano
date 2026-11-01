@@ -204,6 +204,12 @@ class HanoManager:
         self._listeners.add(listener)
         return lambda: self._listeners.discard(listener)
 
+    async def async_subscribe(self, listener: Callable) -> Callable:
+        """Subscribe with an initial snapshot after any pending write completes."""
+        async with self._lock:
+            listener(self.snapshot())
+            return self.subscribe(listener)
+
     @callback
     def notify(self) -> None:
         if self._stopped:

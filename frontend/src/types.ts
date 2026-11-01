@@ -24,6 +24,7 @@ export interface Config {
   tts_language: string;
   history_days: number;
   native_volume_entity_ids: string[];
+  active_notifications_sensor_enabled: boolean;
 }
 export interface Button {
   id: string;

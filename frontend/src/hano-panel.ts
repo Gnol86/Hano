@@ -797,6 +797,18 @@ export class HanoPanel extends LitElement {
     return html`<div class="page">
       <h2>${this.t("settings")}</h2>
       <section class="section">
+        <h3>${this.t("dashboard")}</h3>
+        ${this.check(
+          "activeNotificationsSensor",
+          this.config.active_notifications_sensor_enabled ?? false,
+          (value) => {
+            this.config.active_notifications_sensor_enabled = value;
+            this.touch();
+          },
+        )}
+        <p class="help">${this.t("activeNotificationsSensorHelp")}</p>
+      </section>
+      <section class="section">
         <h3>${this.t("defaults")}</h3>
         <div class="grid">
           ${this.entity("tts", this.config.tts_entity_id, ["tts"], (value) => {

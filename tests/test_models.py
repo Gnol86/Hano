@@ -73,6 +73,26 @@ def test_defaults_are_independent_and_requests_preserve_caller():
     assert normalized["notification_id"] == ""
 
 
+def test_sensor_export_defaults_off_for_existing_config():
+    assert default_config()["active_notifications_sensor_enabled"] is False
+    assert (
+        normalize_config({"history_days": 7})["active_notifications_sensor_enabled"]
+        is False
+    )
+    assert (
+        normalize_config({"active_notifications_sensor_enabled": True})[
+            "active_notifications_sensor_enabled"
+        ]
+        is True
+    )
+
+
+@pytest.mark.parametrize("value", [None, 0, 1, "true", [], {}])
+def test_sensor_export_requires_boolean(value):
+    with pytest.raises(HanoError, match="active_notifications_sensor_enabled"):
+        normalize_config({"active_notifications_sensor_enabled": value})
+
+
 def test_configuration_normalizes_minimal_people_and_rooms():
     raw = {
         "persons": [

@@ -93,9 +93,10 @@ const request = {
 const makeSnapshot = () => {
   const time = "2026-10-21T14:32:00Z";
   return {
-    version: "0.2.1",
+    version: "0.3.0",
     revision: 1,
     config: {
+      active_notifications_sensor_enabled: false,
       persons: [
         {
           person_id: "person.sam",

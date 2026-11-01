@@ -146,6 +146,53 @@ async def test_setup_failure_cleans_manager_and_panel(hass, hano_entry):
     assert "manager" not in hass.data["hano"]
 
 
+async def test_setup_failure_after_sensor_added_cleans_subscription(hass, hano_entry):
+    await hass.config_entries.async_unload(hano_entry.entry_id)
+    forward = hass.config_entries.async_forward_entry_setups
+    managers = []
+
+    async def fail_after_setup(entry, platforms):
+        await forward(entry, platforms)
+        managers.append(entry.runtime_data)
+        raise OSError("setup interrupted")
+
+    with patch.object(
+        hass.config_entries, "async_forward_entry_setups", side_effect=fail_after_setup
+    ):
+        assert not await hass.config_entries.async_setup(hano_entry.entry_id)
+    assert "manager" not in hass.data["hano"]
+    assert managers[0]._stopped
+    assert not managers[0]._listeners
+
+
+async def test_opted_in_sensor_readable_without_admin_api_access(
+    hass, hano_entry, hass_ws_client, hass_read_only_access_token
+):
+    manager = hano_entry.runtime_data
+    await manager.save(
+        manager.config | {"active_notifications_sensor_enabled": True},
+        manager.revision,
+    )
+    await manager.send(
+        {"message": "Shared with dashboard readers", "channels": ["persistent"]}
+    )
+    client = await hass_ws_client(hass, access_token=hass_read_only_access_token)
+    states = await request(client, "get_states")
+    sensor = next(
+        s
+        for s in states["result"]
+        if s["entity_id"] == "sensor.hano_active_notifications"
+    )
+    assert sensor["state"] == "1"
+    assert (
+        sensor["attributes"]["notifications"][0]["message"]
+        == "Shared with dashboard readers"
+    )
+    private = await request(client, "hano/get")
+    assert private["error"]["code"] == "unauthorized"
+    await client.close()
+
+
 async def test_diagnostics_do_not_export_personal_payloads(hass):
     snapshot = {
         "revision": 2,

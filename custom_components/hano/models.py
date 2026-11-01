@@ -36,6 +36,7 @@ def default_config() -> dict[str, Any]:
         "tts_language": "",
         "history_days": 30,
         "native_volume_entity_ids": [],
+        "active_notifications_sensor_enabled": False,
     }
 
 
@@ -168,6 +169,11 @@ def normalize_config(value: Any) -> dict[str, Any]:
     code = "invalid_config"
     result = default_config()
     result.update(deepcopy(_mapping(value, set(result), code, "config")))
+    _boolean(
+        result["active_notifications_sensor_enabled"],
+        code,
+        "active_notifications_sensor_enabled",
+    )
     persons = []
     seen_persons: set[str] = set()
     for index, raw in enumerate(_list(result["persons"], code, "persons")):

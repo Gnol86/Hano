@@ -16,7 +16,7 @@ choose the trigger, message, recipients, and options. Hano tracks each destinati
 waits when requested, and closes the notification across its supported channels.
 There are no notification profiles to maintain.
 
-**Current stable release: `0.2.1`. Requires Home Assistant 2026.10 or newer.**
+**Current stable release: `0.3.0`. Requires Home Assistant 2026.10 or newer.**
 Hano can be installed through a HACS custom repository; it is not listed in the
 HACS default catalogue. This release does not install itself, migrate existing
 automations, or stop an AppDaemon application.
@@ -60,7 +60,7 @@ another push service.
 
 1. In HACS, open **Custom repositories** and add
    `https://github.com/Gnol86/Hano` with the **Integration** category.
-2. Open Hano's download dialog, select **`0.2.1`**, and download it.
+2. Open Hano's download dialog, select **`0.3.0`**, and download it.
 3. Restart Home Assistant to load the integration files.
 4. Go to **Settings → Devices & services → Add integration**, search for **Hano**,
    and confirm setup.
@@ -88,8 +88,61 @@ when sleep is respected. Choose a default TTS entity in **Tests & settings**.
 
 Save the configuration before testing. Use **Preview without sending** to inspect
 routing; **Send real test** calls the selected destinations. These are distinct
-actions. Configuration changes affect new cycles; an active cycle retains its
-original configuration and destination mapping.
+actions. Changes to routing and delivery defaults affect new cycles; an active
+cycle retains its original configuration and destination mapping. The dashboard
+sensor setting described below applies immediately to all active cycles.
+
+## Active notifications on a dashboard
+
+In **Tests & settings → Dashboard**, enable **Enable the active notifications
+sensor** and save. The option is off by default, including after upgrading an
+existing installation. No automation changes or per-notification options are needed.
+
+The sensor's default ID is `sensor.hano_active_notifications`. Its numeric state
+counts active notification cycles, once per notification regardless of the number
+of destinations. Its `notifications` attribute lists them newest first. Pending,
+failed or uncertain deliveries do not remove an active cycle: this is a count of
+open notifications, not proof of delivery or reading. Resolution, expiration and
+replacement close the old cycle. Existing active notifications are included as
+soon as the option is saved, and the list is rebuilt after a restart.
+
+Each list item contains `notification_id`, `cycle_id`, `title`, `message`,
+`priority`, `created_at`, `updated_at`, `expires_at`, `icon`, `color`, `image_url`
+and `click_url`. Dates are ISO 8601 timestamps; `expires_at` is null without an
+expiration. Optional display strings can be empty. Recipients, button actions,
+tokens and history are not exported. There is one sensor, not one entity per
+notification.
+
+**This is a global view:** any user who can read the sensor can read all listed
+notification content, regardless of recipients. The `notifications` attribute is
+excluded from Recorder history; Hano still persists its own notification records.
+Disabling the option immediately makes the sensor `unavailable` and empties the
+list without resolving any notification. Its entity ID is retained. With the
+option enabled and no active notifications, the state is `0` and the list is `[]`.
+
+For example, add a native [Markdown card](https://www.home-assistant.io/dashboards/markdown/)
+through the dashboard's card editor:
+
+```yaml
+type: markdown
+title: Notifications
+entity_id: sensor.hano_active_notifications
+content: |
+  {% for notification in state_attr('sensor.hano_active_notifications', 'notifications') or [] %}
+  **{{ notification.title }}**
+
+  {{ notification.message }}
+
+  {% endfor %}
+visibility:
+  - condition: numeric_state
+    entity: sensor.hano_active_notifications
+    above: 0
+```
+
+Use your actual entity ID if it was renamed or Home Assistant added a suffix to
+avoid a naming conflict. This example displays content only; it does not execute
+notification buttons or resolve notifications.
 
 ## First automation
 
@@ -187,7 +240,7 @@ does not establish reliability on your own phones or speakers.
 - [Architecture](docs/architecture.md)
 - [Migration guide](docs/migration.md)
 - [Development and validation](docs/development.md)
-- [Release notes](releases/0.2.1.md)
+- [Release notes](releases/0.3.0.md)
 - [Contributing](CONTRIBUTING.md)
 
 Hano follows the interface conventions of [Halo](https://github.com/Gnol86/Halo),
